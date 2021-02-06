@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu">
+  <title>Simple Calculator</title>
+  <script>
+    function operate() {
+      const no_1 = Number(document.getElementById("no1").value);
+      const no_2 = Number(document.getElementById("no2").value);
+      let selector = document.getElementById("selector");
+      let selectedValue = selector.options[selector.selectedIndex].value;
+      let result = document.getElementById("result");
+
+      if (selectedValue == "+") {
+        result.innerHTML = no_1 + no_2;
+      } else if (selectedValue == "-") {
+        result.innerHTML = no_1 - no_2;
+      } else if (selectedValue == "*") {
+        result.innerHTML = no_1 * no_2;
+      } else {
+        result.innerHTML = no_1 / no_2;
+      }
+    }
+
+    function addEnterInput() {
+      let no2 = document.getElementById("no2");
+      no2.addEventListener("keydown", function(event) {
+        if (event.keyCode === 13) {
+          event.preventDefault();
+          operate()
+        }
+      });
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: ubuntu;
+    }
+
+    #result {
+      background-color: black;
+      color: white;
+    }
+  </style>
+</head>
+
+<body onload="addEnterInput();">
+  <div>
+    <h1>Simple Calculator</h1>
+    <br>
+
+    <input id="no1" type="value" placeholder="number 1">
+    <br><br>
+    <select name="Select Operation" id="selector">
+      <option value="+">+</option>
+      <option value="-">-</option>
+      <option value="*">*</option>
+      <option value="/">/</option>
+    </select>
+    <br><br>
+    <input id="no2" type="value" placeholder="number 2">
+    <br><br>
+    <button id="operate" onclick="operate();">Calculate</button>
+    <br><br>
+    <h3>Result:</h3>
+    <textarea id="result"></textarea>
+  </div>
+</body>
+
+</html>
