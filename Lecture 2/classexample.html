@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <title>d3.js data driven page</title>
+</head>
+
+<body>
+  <p>This page is inspired by the <a href="https://observablehq.com/@d3/bar-chart-race" target="_blank"><b>Bar Chart
+        Race</b></a>
+    <button onclick="colorP()">Click me</button>
+    <table></table>
+  </p>
+  <script>
+    function colorP() {
+      alert("ok");
+      d3.selectAll("p").style("color",)
+    }
+
+    d3.csv("./category-brands.csv",
+      (d, i, c) => {
+        d3.select("table")
+          .append("tr")
+          .data(d)
+          .enter().append("td")
+          .text(x => x)
+        console.log(i)
+        console.log(c)
+      })
+  </script>
+</body>
+
+</html>

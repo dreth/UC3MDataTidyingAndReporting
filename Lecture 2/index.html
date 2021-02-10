@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>d3.js data driven page</title>
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+</head>
+
+<body>
+  <p>This page is inspired by the <a href="https://observablehq.com/@d3/bar-chart-race" target="_blank"><b>Bar Chart
+        Race</b></a> by <em>Mike Bostock</em> on the we site <a href="https://observablehq.com/">Observable</a>.</p>
+
+  <p>We first download the data <b>category-brands.cvs</b> thas was given as an attachment to the Observable notebook,
+    and save it as local</p>
+
+  <p>We access the data and write it as table</p>
+  <div id="dateSelector"></div>
+  <svg id="myCanvas" style="width:100%; height: 200px;"></svg>
+  <table id="dataTable"></table>
+  <script>
+    table = d3.select("#dataTable");
+    thead = table.append("thead");
+    tbody = table.append("tbody");
+
+    columns = null;
+    names = null;
+    dates = null;
+    data = null;
+    svg = null;
+    maxValue = null;
+
+    function formatHeader(c) {
+      columns = c;
+      thead.append("tr")
+        .selectAll("th").data(c).enter()
+        .append("th").text(d => d)
+    }
+
+    function formatBody(d, c) {
+      tbody.append("tr")
+        .selectAll("td").data(c).enter()
+        .append("td").text(x => d[x])
+    }
+
+    function formatRow(d, c) {
+      d.value = parseInt(d.value)
+      return d
+    }
+
+    d3.csv("https://raw.githubusercontent.com/brdauria/temp-d3js/master/category-brands.csv?token=AC5KAYDBGA7WWSSG6FHEVXLAFPQFE", formatRow)
+      .then(async (data) => {
+        formatHeader(data.columns);
+        tidying(data)
+      })
+
+    function rank(d, n = 10) {
+      return d.sort((a, b) => d3.descending(a.value, b.value)).slice(0, n);
+    }
+
+    function dateSelector(d) {
+      d.sort((a, b) => d3.ascending(a.date, b.date));
+      htmlNode = d3.select("#dateSelector");
+      htmlNode.append("label")
+        .attr("for", "dates")
+        .text("Choose a date: ");
+      htmlNode.append("select")
+        .attr("id", "dates")
+        .on("change", updateSelect)
+        .selectAll("option")
+        .data(d).enter()
+        .append("option")
+        .attr("value", e => e)
+        .text(e => e);
+    }
+
+    function updateTable(data) {
+      tbody.text("")
+      trSelection = tbody.selectAll('tr').data(data)
+
+      trSelection.enter()
+        .append("tr")
+        .selectAll("td")
+        .data(d => columns.map(c => d[c]))
+        .enter()
+        .append("td").text(x => x)
+
+
+    }
+
+    function tidying(d, n = 10) {
+      data = d;
+      names = new Set(d.map(e => e.name));
+      dates = Array.from(new Set(d.map(e => e.date)));
+      dateSelector(dates);
+      maxValue = d3.reduce(d, (p, v) => Math.max(p, v.value), 0)
+      updateSelect.call(d3.select("#dates").node())
+    }
+
+    function updateSelect(e) {
+      fltData = rank(d3.filter(data, d => d.date === this.value))
+      updateChart(fltData)
+      updateTable(fltData)
+    }
+
+    function updateChart(data) {
+      svg = d3.select("#myCanvas");
+      w = svg.node().width.baseVal.value;
+      h = svg.node().height.baseVal.value;
+
+      x = d3.scaleLinear([0, data.length], [0, w])
+      y = d3.scaleLinear([0, maxValue], [0, h])
+      cat = new Set(d3.map(data, d => d.category))
+      color = d3.scaleOrdinal(cat, d3.schemeTableau10)
+
+      svgBind = svg.text("")
+        .selectAll("rect")
+        .data(data)
+
+      svgBind.enter()
+        .append('rect')
+        .attr('x', (d, i) => x(i))
+        .attr('y', d => y(maxValue - d.value))
+        .attr('height', d => y(d.value))
+        .attr('width', x(1) * 0.95)
+        .attr('fill', d => color(d.category))
+
+      svgBind.enter()
+        .append("text")
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('transform', (d, i) => 'translate(' + x(i + 0.5) + ',' + y(maxValue - d.value - 5000) + '),' + 'rotate(-90)')
+        .text(d => d.name);
+    }
+  </script>
+</body>
+
+</html>
