@@ -13,7 +13,7 @@
   <p>This page is inspired by the <a href="https://observablehq.com/@d3/bar-chart-race" target="_blank"><b>Bar Chart
         Race</b></a>
     <button onclick="colorP()">Click me</button>
-    <table></table>
+    <table id="table"></table>
   </p>
   <script>
     function colorP() {
@@ -31,6 +31,8 @@
         console.log(i)
         console.log(c)
       })
+    
+      d3.select("table")
   </script>
 </body>
 
