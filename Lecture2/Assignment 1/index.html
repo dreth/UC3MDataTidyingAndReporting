@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu">
+
+  <title>Select table (cool d3 stuff)</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: ubuntu, sans-serif;
+      margin: 30px;
+    }
+
+    select {
+      margin-left: 3px;
+    }
+
+    #dataTable {
+      color: white;
+    }
+
+    th {
+      font-weight: heavy;
+      color: aqua;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Select CSV file to display</h1>
+  <br>
+  ⟶⟶⟶⟶<select id="csvSelect"></select>
+  <table id="dataTable" class="table"></table>
+</body>
+
+<script>
+  var table = d3.select('#dataTable');
+  var thead = table.append("thead");
+  var tbody = table.append("tbody");
+
+  columns = null;
+
+  options = ["data1.csv", "data2.csv"]
+  object = '#csvSelect'
+
+  function genSelector(optn, obj) {
+    let select = d3.select(obj)
+      .on('change', loadTable);
+
+    let options = select
+      .selectAll('option')
+      .data(optn).enter()
+      .append('option')
+      .text((d) => d);
+  }
+
+  function loadTable() {
+    selectValue = d3.select('#csvSelect').property('value')
+    d3.csv(`../data/${selectValue}`).then(async (data) => {
+      thead.selectAll("th").remove()
+      formatHeader(data.columns);
+      updateTable(data);
+    })
+  }
+
+  // running functions
+  genSelector(options, object)
+  loadTable()
+
+  function formatHeader(c) {
+    columns = c;
+    thead.append("tr")
+      .selectAll("th")
+      .data(c)
+      .enter()
+      .append("th")
+      .text(d => d)
+  }
+
+  function updateTable(data) {
+    tbody.text("")
+    trSelection = tbody.selectAll('tr').data(data)
+    trSelection.enter()
+      .append("tr")
+      .selectAll("td")
+      .data(d => columns.map(c => d[c]))
+      .enter()
+      .append("td").text(x => x)
+  }
+
+</script>
+
+</html>
