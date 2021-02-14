@@ -31,6 +31,10 @@
     #redButton {
       margin-left: 40px;
     }
+
+    #clearAll {
+      margin-left: 40px;
+    }
   </style>
 </head>
 
@@ -42,8 +46,9 @@
   <input placeholder="Write here!" size="47" id="userInput">
   <br><br><br>
   <button id="insertButton" class="btn btn-light" onclick="insertText()">Insert text</button>
-  <button id="blueButton" class="btn btn-primary" onclick="insertP('text-primary')">Blue</button>
-  <button id="redButton" class="btn btn-danger" onclick="insertP('text-danger')">Red</button>
+  <button id="blueButton" class="btn btn-primary" onclick="changeColor('text-primary')">Blue</button>
+  <button id="redButton" class="btn btn-danger" onclick="changeColor('text-danger')">Red</button>
+  <button id="clearAll" class="btn btn-warning" onclick="deleteP()">Remove All <b>p tags</b></button>
   <br><br>
 </body>
 
@@ -52,17 +57,22 @@
 
   function insertText() {
     let text = d3.select('#userInput').property("value");
+    console.log(text)
     d3.select('body')
-      .data(text[1])
       .append('p')
-      .style("color", currColor)
-      .text(d => d)
+      .text(text)
+      .attr('class',currColor)
   }
 
-  function insertP(col) {
+  function changeColor(col) {
     d3.selectAll('p')
       .attr('class',col)
       currColor = col;
+  }
+
+  function deleteP() {
+    d3.selectAll('p')
+      .remove()
   }
 </script>
 
