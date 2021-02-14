@@ -16,21 +16,20 @@
       background-color: black;
       color: white;
       font-family: ubuntu, sans-serif;
-      margin: 30px;
+      text-align: center;
+      margin-top: 20px;
     }
 
-    h1 {
-      margin-left: 110px;
+    button {
+      font-size: larger;
     }
 
     #blueButton {
-      margin-left: 155px;
-      font-size: larger;
+      margin-left: 40px;
     }
 
     #redButton {
       margin-left: 40px;
-      font-size: larger;
     }
   </style>
 </head>
@@ -40,25 +39,30 @@
   <br>
   <span>Write text in the input below and press one of the two color buttons.</span>
   <br><br>
-  <input placeholder="Write here!" size="47" id="userInput" type="text">
+  <input placeholder="Write here!" size="47" id="userInput">
   <br><br><br>
-  <button id="blueButton" class="btn btn-primary" onclick="insertP('blue')">Blue</button>
-  <button id="redButton" class="btn btn-danger" onclick="insertP('red')">Red</button>
+  <button id="insertButton" class="btn btn-light" onclick="insertText()">Insert text</button>
+  <button id="blueButton" class="btn btn-primary" onclick="insertP('text-primary')">Blue</button>
+  <button id="redButton" class="btn btn-danger" onclick="insertP('text-danger')">Red</button>
   <br><br>
 </body>
 
 <script>
-  function insertP(col) {
-    let text = d3.select('userInput').property("value");
-    console.log(text);
+  var currColor = 'white';
+
+  function insertText() {
+    let text = d3.select('#userInput').property("value");
     d3.select('body')
+      .data(text[1])
       .append('p')
-      .data(text)
-      .enter()
+      .style("color", currColor)
       .text(d => d)
+  }
+
+  function insertP(col) {
     d3.selectAll('p')
-      .property('style')
-      .style("color", col);
+      .attr('class',col)
+      currColor = col;
   }
 </script>
 

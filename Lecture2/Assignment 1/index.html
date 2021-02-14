@@ -13,6 +13,7 @@
   <title>Select table (cool d3 stuff)</title>
   <style>
     body {
+      text-align: center;
       background-color: black;
       color: white;
       font-family: ubuntu, sans-serif;
@@ -20,7 +21,7 @@
     }
 
     select {
-      margin-left: 3px;
+      font-size: larger;
     }
 
     #dataTable {
@@ -31,14 +32,33 @@
       font-weight: heavy;
       color: aqua;
     }
+
+    table {
+      text-align: left;
+      border-width: 3px;
+      border: aqua;
+    }
   </style>
 </head>
 
 <body>
   <h1>Select CSV file to display</h1>
   <br>
-  ⟶⟶⟶⟶<select id="csvSelect"></select>
-  <table id="dataTable" class="table"></table>
+  <div class="container">
+    <div class="row">
+      <div class="col-xs">
+        <select class="form-select" id="csvSelect"></select>
+      </div>
+    </div>
+    <br>
+    <div class="row">
+      <div class="col-sm">
+        <table id="dataTable" class="table"></table>
+      </div>
+    </div>
+  </div>
+  <br><br>
+
 </body>
 
 <script>
