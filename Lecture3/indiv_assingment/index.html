@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu">
+
+  <title>Plotting histogram by clicking column names</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      text-align: center;
+      margin-top: 10px;
+      font-family: ubuntu, sans-serif, helvetica;
+    }
+
+    th {
+      color: aqua;
+      border-collapse: collapse;
+    }
+
+    th:hover {
+      background-color: rgb(58, 58, 58);
+      color: aquamarine;
+      box-shadow: inset 0 0 0 1px aquamarine;
+      cursor: pointer;
+    }
+
+    td {
+      color: white;
+    }
+
+    table {
+      text-align: left;
+      border-width: 3px;
+      border: aqua;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Click on a column to plot a histogram for it</h1>
+  <br>
+  <div class="container">
+    <div class="row">
+      <div class="col-sm">
+        <table id="dataTable" class="table"></table>
+      </div>
+    </div>
+  </div>
+  <div id="hist"></div>
+
+</body>
+
+<script>
+  var table = d3.select('#dataTable');
+  var thead = table.append("thead");
+  var tbody = table.append("tbody");
+  var data;
+
+  columns = null;
+
+  function plotHist(col) {
+    console.log(col)
+
+    // set the dimensions and margins of the graph
+    var margin = { top: 10, right: 30, bottom: 30, left: 40 },
+      width = 460 - margin.left - margin.right,
+      height = 400 - margin.top - margin.bottom;
+
+    // append the svg object to the body of the page
+    d3.select('svg').remove()
+
+    var svg = d3.select("#hist")
+      .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform",
+        "translate(" + margin.left + "," + margin.top + ")");
+
+    // X axis: scale and draw:
+    var x = d3.scaleLinear()
+      .domain([0, 1000])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
+      .range([0, width]);
+    svg.append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
+
+    // set the parameters for the histogram
+    var histogram = d3.histogram()
+      .value(function (d) { return d.price; })   // I need to give the vector of value
+      .domain(x.domain())  // then the domain of the graphic
+      .thresholds(x.ticks(70)); // then the numbers of bins
+
+    // And apply this function to data to get the bins
+    var bins = histogram(data[col]);
+
+    // Y axis: scale and draw:
+    var y = d3.scaleLinear()
+      .range([height, 0]);
+    y.domain([0, d3.max(bins, function (d) { return d.length; })]);   // d3.hist has to be called before the Y axis obviously
+    svg.append("g")
+      .call(d3.axisLeft(y));
+
+    // append the bar rectangles to the svg element
+    svg.selectAll("rect")
+      .data(bins)
+      .enter()
+      .append("rect")
+      .attr("x", 1)
+      .attr("transform", function (d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
+      .attr("width", function (d) { return x(d.x1) - x(d.x0) - 1; })
+      .attr("height", function (d) { return height - y(d.length); })
+      .style("fill", "#69b3a2")
+  }
+
+  function formatHeader(c) {
+    columns = c;
+    thead.append("tr")
+      .selectAll("th")
+      .data(c)
+      .enter()
+      .append("th")
+      .on('click', (d, c) => plotHist(c))
+      .text(d => d)
+  }
+
+  function updateTable(data) {
+    tbody.text("")
+    trSelection = tbody.selectAll('tr').data(data)
+    trSelection.enter()
+      .append("tr")
+      .selectAll("td")
+      .data(d => columns.map(c => d[c]))
+      .enter()
+      .append("td").text(x => x)
+  }
+
+  d3.dsv(';', './data/histogram_data.csv').then(async (data) => {
+    formatHeader(data.columns);
+    updateTable(data);
+    data = data;
+  })
+
+</script>
+
+</html>

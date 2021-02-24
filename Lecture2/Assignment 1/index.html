@@ -28,6 +28,10 @@
       color: white;
     }
 
+    #sumTotal {
+      background-color: white;
+    }
+
     th {
       font-weight: heavy;
       color: aqua;
@@ -46,19 +50,27 @@
   <br>
   <div class="container">
     <div class="row">
-      <div class="col-xs">
+      <div class="col-sm">
         <select class="form-select" id="csvSelect"></select>
       </div>
-    </div>
-    <br>
-    <div class="row">
       <div class="col-sm">
-        <table id="dataTable" class="table"></table>
+        <select class="form-select" id="colSelect"></select>
+      </div>
+      <div class="row" style="margin-top: 10px;">
+        <div class="col-sm input-group">
+          <button class="btn btn-warning">Sum</button>
+          <div id="sumTotal" class="col"></div>
+        </div>
+      </div>
+      <br>
+      <div class="row">
+        <div class="col-sm">
+          <table id="dataTable" class="table"></table>
+        </div>
       </div>
     </div>
-  </div>
-  <br><br>
-
+    <br><br>
+    
 </body>
 
 <script>
@@ -71,7 +83,7 @@
   options = ["data1.csv", "data2.csv"]
   object = '#csvSelect'
 
-  function genSelector(optn, obj) {
+  function genDatasetSelector(optn, obj) {
     let select = d3.select(obj)
       .on('change', loadTable);
 
@@ -82,17 +94,22 @@
       .text((d) => d);
   }
 
+  function genColSelector(col) {
+    let select = d3.select(obj)
+  }
+
   function loadTable() {
     selectValue = d3.select('#csvSelect').property('value')
     d3.csv(`../data/${selectValue}`).then(async (data) => {
       thead.selectAll("th").remove()
       formatHeader(data.columns);
       updateTable(data);
+
     })
   }
 
   // running functions
-  genSelector(options, object)
+  genDatasetSelector(options, object)
   loadTable()
 
   function formatHeader(c) {
