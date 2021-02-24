@@ -65,54 +65,41 @@
   var rows;
 
   function plotHist(col) {
-    let sel_col = dat.map((d) => {
-      return d[col]
-    });
+    console.log(sel_col)
+    updateChart(dat)
+  }
 
-    d3.selectAll('svg').remove()
+  function updateChart(data) {
+    svg = d3.select("#myCanvas");
+    w = svg.node().width.baseVal.value;
+    h = svg.node().height.baseVal.value;
 
-    var margin = { top: 30, right: 30, bottom: 30, left: 50 },
-      width = 460 - margin.left - margin.right,
-      height = 400 - margin.top - margin.bottom;
+    x = d3.scaleLinear([0, data.length], [0, w])
+    y = d3.scaleLinear([0, maxValue], [0, h])
+    cat = new Set(d3.map(data, d => d.category))
+    color = d3.scaleOrdinal(cat, d3.schemeTableau10)
 
-    // The number of bins
-    Nbin = 10;
+    svgBind = svg.text("")
+      .selectAll("rect")
+      .data(data)
 
-    var x = d3.scaleLinear()
-      .domain(domain)
-      .range([0, width]);
+    svgBind.enter()
+      .append('rect')
+      .attr('x', (d, i) => x(i))
+      .attr('y', d => y(maxValue - d.value))
+      .attr('height', d => y(d.value))
+      .attr('width', x(1) * 0.95)
+      .attr('fill', d => color(d.category))
 
-    var histogram = d3.histogram()
-      .domain(x.domain()) // then the domain of the graphic
-      .thresholds(x.ticks(Nbin)); // then the numbers of bins
-
-    // And apply this function to data to get the bins
-    var bins = histogram(data);
-
-    // Add the svg element to the body and set the dimensions and margins of the graph
-    var svg = d3.select("#hist")
-      .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    svg.append("g")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
-
-    var y = d3
-      .scaleLinear()
-      .range([height, 0])
-      .domain([
-        0,
-        d3.max(bins, function (d) {
-          return d.length;
-        })
-      ]);
-
-    svg.append("g").call(d3.axisLeft(y));
-
+    svgBind.enter()
+      .append("text")
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('transform',
+        (d, i) => 'translate(' + x(i + 0.5) +
+          ',' + y(maxValue - d.value - 5000) + '),'
+          + 'rotate(-90)')
+      .text(d => d.name);
   }
 
   function formatHeader(c) {
