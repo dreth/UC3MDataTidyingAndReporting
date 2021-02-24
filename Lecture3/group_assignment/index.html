@@ -2,22 +2,26 @@
 <html>
 
 <head>
-  <title>d3.js data driven page</title>
+  <title>Dynamically changing barplot style</title>
   <script src="https://d3js.org/d3.v6.min.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body{
+    body {
       background-color: black;
       color: white;
       text-align: center;
     }
-    
-    td{
+
+    td {
       color: white;
     }
-    
+
     th {
       color: aqua;
+    }
+
+    #qtyRows {
+      width: 50px;
     }
 
     #myCanvas {
@@ -48,11 +52,11 @@
   <h5>Daniel Alonso, Danyu Zhang</h5>
   <br>
   <p>
-    This page is inspired by the
-    <a href="https://observablehq.com/@d3/bar-chart-race" target="_blank"><b>Bar Chart Race</b></a>
-    <button onclick="colorP()">Click me</button>
-
-  <div id="dateSelector"></div>
+  <div>Show <input id="qtyRows" type="value" placeholder="amount" value="10" onchange="displayRows()"> amount of rows
+  </div>
+  <br>
+  <select id="dateSelector"></select>
+  <br>
   <svg id="myCanvas" style="width:100%; height: 200px;"></svg>
   <div class="container">
     <div class="row">
@@ -75,7 +79,15 @@
     "category": "categoria",
     "value": "valor"
   };
-  d3.csv(csv_url).then(tidying)
+  
+  function displayRows() {
+    d3.csv(csv_url, (d, i, c) => {
+      if (i <= d3.select("#qtyRows").property('value')) return d
+    }).then(tidying)
+  }
+
+  // default rows to display
+  displayRows()
 
   function updateTable(d) {
     d3.select("table tbody")
@@ -103,20 +115,14 @@
     data = d;
     columns = d.columns;
     maxValue = d3.reduce(d, (p, v) => Math.max(p, v.value), 0)
-
     dates = Array.from(new Set(d.map(e => e.date)));
     dateSelector(dates);
-
     updateSelect()
   }
 
   function dateSelector(d) {
     d.sort((a, b) => d3.ascending(a.date, b.date));
-    htmlNode = d3.select("#dateSelector");
-    htmlNode.append("label")
-      .attr("for", "dates")
-      .text("Choose a date: ");
-    htmlNode.append("select")
+    d3.select("#dateSelector")
       .attr("id", "dates")
       .on("change", d => updateSelect(d))
       .selectAll("option")
@@ -165,10 +171,6 @@
           ',' + y(maxValue - d.value - 5000) + '),'
           + 'rotate(-90)')
       .text(d => d.name);
-  }
-
-  function colorP() {
-    d3.selectAll("p").style("color", "red");
   }
 </script>
 
