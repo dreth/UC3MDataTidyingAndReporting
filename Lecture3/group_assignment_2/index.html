@@ -62,44 +62,64 @@
   var tbody = table.append("tbody");
   var dat;
   var columns;
-  var rows;
 
   function plotHist(col) {
-    console.log(sel_col)
-    updateChart(dat)
-  }
+    d3.selectAll('svg').remove()
 
-  function updateChart(data) {
-    svg = d3.select("#myCanvas");
-    w = svg.node().width.baseVal.value;
-    h = svg.node().height.baseVal.value;
+    let result = [ {x: []}, {data: []}]
 
-    x = d3.scaleLinear([0, data.length], [0, w])
-    y = d3.scaleLinear([0, maxValue], [0, h])
-    cat = new Set(d3.map(data, d => d.category))
-    color = d3.scaleOrdinal(cat, d3.schemeTableau10)
+    dat.forEach(function(d) {
+        result['x'].push({x: d.x})
+        result['data'].push({data: d['']})
+    });
 
-    svgBind = svg.text("")
-      .selectAll("rect")
-      .data(data)
+    console.log(result) 
 
-    svgBind.enter()
-      .append('rect')
-      .attr('x', (d, i) => x(i))
-      .attr('y', d => y(maxValue - d.value))
-      .attr('height', d => y(d.value))
-      .attr('width', x(1) * 0.95)
-      .attr('fill', d => color(d.category))
 
-    svgBind.enter()
-      .append("text")
-      .attr('x', 0)
-      .attr('y', 0)
-      .attr('transform',
-        (d, i) => 'translate(' + x(i + 0.5) +
-          ',' + y(maxValue - d.value - 5000) + '),'
-          + 'rotate(-90)')
-      .text(d => d.name);
+    // set the dimensions and margins of the graph
+    let margin = { top: 30, right: 30, bottom: 70, left: 60 },
+      width = 460 - margin.left - margin.right,
+      height = 400 - margin.top - margin.bottom;
+
+    // append the svg object to the body of the page
+    let svg = d3.select("#hist")
+      .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform",
+        "translate(" + margin.left + "," + margin.top + ")");
+
+      // X axis
+      let x = d3.scaleBand()
+        .range([0, width])
+        .domain(dat.map((d) => d.x))
+        .padding(0.2);
+      svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x))
+        .selectAll("text")
+        .attr("transform", "translate(-10,0)rotate(-45)")
+        .style("text-anchor", "end");
+
+      // Add Y axis
+      let y = d3.scaleLinear()
+        .domain([d3.min(sel_col), d3.max(sel_col)+5])
+        .range([height, 0]);
+      svg.append("g")
+        .call(d3.axisLeft(y));
+      
+      // Bars
+      svg.selectAll("mybar")
+        .data(sel_col)
+        .enter()
+        .append("rect")
+        .attr("x", (d) =>  x(d.x))
+        .attr("y", (d) =>  console.log(y(d.data)))
+        .attr("width", x.bandwidth())
+        .attr("height", (d) => height - y(d.data))
+        .attr("fill", "lightred")
+      
   }
 
   function formatHeader(c) {
