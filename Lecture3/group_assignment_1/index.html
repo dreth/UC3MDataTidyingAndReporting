@@ -37,6 +37,8 @@
 
     #myCanvas {
       background-color: lightgray;
+      height: 100%;
+      width: 100%;
     }
 
     .name {
@@ -66,9 +68,9 @@
   <div>Show <input id="qtyRows" type="value" placeholder="amount" value="10" onchange="displayRows()"> amount of rows
   </div>
   <br>
-  <select id="dateSelector"></select>
+  <span>Select year: </span><select id="dateSelector"></select>
   <br>
-  <svg id="myCanvas" style="width:100%; height: 200px;"></svg>
+  <svg id="myCanvas"></svg>
   <div class="container">
     <div class="row">
       <div class="col-sm">
@@ -92,9 +94,8 @@
   };
   
   function displayRows() {
-    d3.csv(csv_url, (d, i, c) => {
-      if (i <= d3.select("#qtyRows").property('value')) return d
-    }).then(tidying)
+    d3.csv(csv_url, (d) => d)
+    .then(tidying)
   }
 
   // default rows to display
@@ -105,6 +106,7 @@
       .selectAll("tr")
       .data(d)
       .join("tr")
+      .on('click', (e,d) => console.log(d))
       .selectAll("td")
       .data(e => columns.map(x => e[x]))
       .join("td")
@@ -145,13 +147,14 @@
 
   function updateSelect(e) {
     val = d3.select("select").node().value
-    fdata = d3.filter(data, d => d.date == val)
+    fdata = d3.filter(data, (d,i) => d.date == val)
+    .filter((d,i) =>  i <= d3.select("#qtyRows").property('value'))
     updateTable(fdata)
-    updateChart(fdata)
     updateChart(fdata)
   }
 
   function updateChart(data) {
+    console.log(data)
     svg = d3.select("#myCanvas");
     w = svg.node().width.baseVal.value;
     h = svg.node().height.baseVal.value;
