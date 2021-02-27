@@ -69,7 +69,7 @@
   </div>
   <br>
   <span>Select year: </span><select id="dateSelector"></select>
-  <br>
+  <br><br>
   <svg id="myCanvas"></svg>
   <div class="container">
     <div class="row">
@@ -85,13 +85,15 @@
 </body>
 
 <script>
-  csv_url = "./data/category-brands.csv";
-  cs = {
+  var csv_url = "./data/category-brands.csv";
+  var cs = {
     "date": "fecha",
     "name": "nombre",
     "category": "categoria",
     "value": "valor"
   };
+  var coloured = false;
+  var currRect;
   
   function displayRows() {
     d3.csv(csv_url, (d) => d)
@@ -106,7 +108,20 @@
       .selectAll("tr")
       .data(d)
       .join("tr")
-      .on('click', (e,d) => console.log(d))
+      .on('click', function(e,d) { 
+        currRect = `#rect_${d.name[1]}_${d.value}`;
+        d3.select(currRect).attr('fill', function(d) { 
+        if (coloured == false) {
+          updateSelect();
+          d3.select(currRect).attr('fill','black');
+          coloured = true;
+          }
+        else {
+          updateSelect();
+          d3.select(currRect).attr('fill','black');
+          coloured = false;
+        }})
+      })
       .selectAll("td")
       .data(e => columns.map(x => e[x]))
       .join("td")
@@ -154,8 +169,7 @@
   }
 
   function updateChart(data) {
-    console.log(data)
-    svg = d3.select("#myCanvas");
+    var svg = d3.select("#myCanvas");
     w = svg.node().width.baseVal.value;
     h = svg.node().height.baseVal.value;
 
@@ -175,6 +189,7 @@
       .attr('height', d => y(d.value))
       .attr('width', x(1) * 0.95)
       .attr('fill', d => color(d.category))
+      .attr('id', d => `rect_${d.name[1]}_${d.value}`)
 
     svgBind.enter()
       .append("text")
