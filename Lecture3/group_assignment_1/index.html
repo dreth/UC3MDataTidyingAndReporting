@@ -94,6 +94,7 @@
   };
   var coloured = false;
   var currRect;
+  var prevRect;
   
   function displayRows() {
     d3.csv(csv_url, (d) => d)
@@ -108,12 +109,16 @@
       .selectAll("tr")
       .data(d)
       .join("tr")
-      .on('click', function(e,d) { 
+      .on('click', (e,d) => { 
         currRect = `#rect_${d.name[1]}_${d.value}`;
-        d3.select(currRect).attr('fill', function(d) { 
+        d3.select(currRect).attr('fill', (d) => { 
         if (coloured == false) {
           updateSelect();
-          d3.select(currRect).attr('fill','black');
+          if (prevRect == currRect) {
+            d3.select(currRect).attr('fill',color(d.category));
+          } else {
+            d3.select(currRect).attr('fill','black');
+          }
           coloured = true;
           }
         else {
@@ -121,6 +126,7 @@
           d3.select(currRect).attr('fill','black');
           coloured = false;
         }})
+        prevRect = currRect;
       })
       .selectAll("td")
       .data(e => columns.map(x => e[x]))
