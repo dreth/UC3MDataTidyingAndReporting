@@ -1,3 +1,3 @@
-# Assignment 1: Simple calculator
+# Simple calculator assignment
 
-A calculator that operates 2 numbers using an operation selected in the drop-down menu between both input fields.
+- Github pages deployment is [here](https://daac.es/data-tidying/assignment0/)!
