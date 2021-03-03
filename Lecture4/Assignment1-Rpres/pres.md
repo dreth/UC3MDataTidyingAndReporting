@@ -2,6 +2,7 @@ Survival Times for Different Cancers
 ========================================================
 author: Daniel A.
 date: March 2nd, 2021
+autosize:true
 font-import: https://fonts.googleapis.com/css?family=Ubuntu;
 font-family: ubuntu, sans-serif;
 
@@ -24,7 +25,10 @@ The **Survival** variable describes the post-disease survival time in days and t
 library(Stat2Data)
 ```
 
-Original source:
+Original source
+========================================================
+transition: fade
+transition-speed: fast
 
 - From the article "Supplemental Ascorbate in the Supportive Treatment of Cancer: Reevaluation ofProlongation of Survival Times in Terminal Human Cancer" by Ewan Cameron and Linus Pauling,Proceedings of the National Academy of Sciences of the United States of America, Vol. 75, No. 9(Sep., 1978), pp. 4538-4542.
 
@@ -51,7 +55,10 @@ Table: Genetic data
 
 Here we only see the first five entries, which are only for stomach cancers.
 
-### Let's plot the mean survival time:
+Plotting mean survival time
+========================================================
+transition: fade
+transition-speed: fast
 
 ![plot of chunk unnamed-chunk-3](pres-figure/unnamed-chunk-3-1.png)
 
@@ -79,7 +86,7 @@ transition-speed: fast
 <style>
 .p_iframe iframe {
   width: 100%;
-  height: 1200px;
+  height: 1000px;
 }
 </style>
 
