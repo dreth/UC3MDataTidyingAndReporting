@@ -2,10 +2,8 @@ Survival Times for Different Cancers
 ========================================================
 author: Daniel A.
 date: March 2nd, 2021
-autosize: true
 font-import: https://fonts.googleapis.com/css?family=Ubuntu;
 font-family: ubuntu, sans-serif;
-css: styles.css
 
 Brief description of the dataset
 ========================================================
@@ -75,8 +73,6 @@ Boxplots of survival time per cancer type
 ========================================================
 transition: fade
 transition-speed: fast
-
-&nbsp;
 
 
 
