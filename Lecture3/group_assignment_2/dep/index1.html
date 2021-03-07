@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu">
+
+  <title>Plotting histogram by clicking column names</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      text-align: center;
+      margin-top: 10px;
+      font-family: ubuntu, sans-serif, helvetica;
+    }
+
+    th {
+      color: aqua;
+      border-collapse: collapse;
+    }
+
+    th:hover {
+      background-color: rgb(58, 58, 58);
+      color: aquamarine;
+      box-shadow: inset 0 0 0 1px aquamarine;
+      cursor: pointer;
+    }
+
+    td {
+      color: white;
+    }
+
+    table {
+      text-align: left;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Click on a column to plot a histogram for it</h1>
+  <br>
+  <div class="container">
+    <div class="row">
+      <div class="col-sm">
+        <table id="dataTable" class="table"></table>
+      </div>
+    </div>
+  </div>
+  <svg id="myCanvas" style="width:100%; height: 200px;"></svg>
+
+</body>
+
+<script>
+  csv_url = false ? "histogram-data.csv" : "https://raw.githubusercontent.com/bernardo-dauria/2021-02-17-assignment-2/master/histogram-data.csv";
+
+    d3.dsv(";", csv_url).then(n);
+
+    var t, e;
+    
+    function n(n) { t = n; e = n.columns; a(); c() }
+
+    function a() { 
+      d3.select("table thead")
+      .selectAll("tr")
+      .remove(); 
+      
+      d3.select("table thead")
+      .append("tr")
+      .selectAll("th")
+      .data(e)
+      .join("th")
+      .text(t => t) 
+    }
+
+    function c() { 
+      d3.select("table tbody")
+      .selectAll("tr")
+      .data(t)
+      .join("tr")
+      .selectAll("td")
+      .data(t => Object.entries(t))
+      .join("td")
+      .text(t => t[1])
+      .attr("data-col", t => t[0])
+      .classed("selectable", t => !s && "x" != t[0])
+      .on("click", (t, e) => { if (!s && "x" != e[0]) i(e[0]); console.log(e) }) 
+    }
+
+    function i(e) { 
+      svg = d3.select("#myCanvas");
+      
+      w = svg.node().width.baseVal.value;
+      h = svg.node().height.baseVal.value;
+      
+      max_y = d3.reduce(t, (t, n) => Math.max(t, n[e]), 0);
+      
+      min_y = d3.reduce(t, (t, n) => Math.min(t, n[e]), 0);
+      x = d3.scaleLinear([0, t.length], [0, w]);
+      y = d3.scaleLinear([min_y - 20, max_y], [h, 0]);
+      svgBind = svg.text("").selectAll("rect").data(t);
+
+      svgBind.enter()
+      .append("rect")
+      .attr("x", (t, e) => x(e))
+      .attr("y", t => y(Math.max(t[e], 0)))
+      .attr("height", t => Math.abs(y(t[e]) - y(0)))
+      .attr("width", .95 * x(1)).style("fill", t => t[e] > 0 ? "green" : "red");
+      
+      svgBind.enter()
+      .append("text")
+      .attr("x", (t, e) => x(e + .5))
+      .attr("y", y(min_y - 10))
+      .attr("text-anchor", "middle")
+      .text(t => t["x"]) 
+    }
+
+    function l() { 
+      d3.select("#myCanvas")
+      .text("") 
+    }
+
+    function d() { 
+      svg = d3.select("#myCanvas");
+      w = svg.node().width.baseVal.value;
+      h = svg.node().height.baseVal.value;
+      
+      max_y = d3.reduce(t, (t, e) => Math.max(t, e["data1"]), 0);
+      min_y = d3.reduce(t, (t, e) => Math.min(t, e["data3"]), 0);
+      
+      x = d3.scaleLinear([0, t.length], [0, w]);
+      y = d3.scaleLinear([min_y - 20, max_y], [h, 0]);
+      color = d3.scaleOrdinal(e, d3.schemeTableau10);
+      svgBind = svg.text("")
+      .selectAll("g")
+      .data(t)
+      .join("g")
+      .attr("transform", (t, e) => `translate(${x(e)},0)`);
+      
+      var n;
+      var a; 
+      
+      svgBind.selectAll("rect")
+      .data(t => Object.entries(t).slice(-3))
+      .join("rect")
+      .attr("x", (t, e) => e * x(1) / 3 * .95)
+      .attr("y", t => y(Math.max(t[1], 0)))
+      .attr("height", t => Math.abs(y(t[1]) - y(0)))
+      .attr("width", x(1) / 3 * .95)
+      .style("fill", t => color(t[0]));
+      
+      svgBind.append("text")
+      .attr("x", (t, e) => x(.5))
+      .attr("y", y(min_y - 10))
+      .attr("text-anchor", "middle").text(t => t["x"]) 
+    }
+
+    var s = false;
+
+    function r(t) { s = t.checked; c(); s ? d() : l() }
+</script>
+
+</html>

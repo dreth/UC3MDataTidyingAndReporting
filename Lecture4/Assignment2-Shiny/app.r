@@ -53,3 +53,21 @@ server <- function(input, output) {
 # Run the application 
 shinyApp(ui = ui, server = server)
 
+```{r include=FALSE}
+library(shiny)
+library(tidyverse)
+library(shinyWidgets)
+library(magrittr)
+library(tableHTML)
+```
+```{r include=FALSE}
+datosA=read.csv("./DatosNBA.csv", sep=";", dec=".")
+```
+```{r include=FALSE}
+datos=datosA[,2:30]
+datos %<>% mutate_at(c("Player", "Pos","Age","Tm"), as.factor)
+datos_Player = levels(datos$Player) %>% str_sort()
+datos_Pos = levels(datos$Pos) %>% str_sort()
+datos_Age = levels(datos$Age) %>% str_sort()
+datos_Tm = levels(datos$Tm) %>% str_sort()
+```
