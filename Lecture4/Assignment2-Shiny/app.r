@@ -54,5 +54,3 @@ server <- function(input, output) {
 
 # Run the application 
 shinyApp(ui = ui, server = server)
-
-runGitHub("shinyapp", "dreth")
