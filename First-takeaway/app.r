@@ -188,8 +188,8 @@ shinyApp(
         {
             plotHistBox()
         },
-        width = "auto",
-        height = reactive(input$heightInputHB)
+            width = "auto",
+            height = reactive(input$heightInputHB)
         )
 
         # Download button for histogram/boxplot section
