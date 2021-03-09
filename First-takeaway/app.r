@@ -1,3 +1,4 @@
+# importing required libraries
 require(shiny)
 require(tidyverse)
 require(shinyjs)
@@ -10,10 +11,11 @@ require(foreach)
 require(MASS)
 require(gridExtra)
 
+# importing data
 dem <- read.csv('./data/data.csv')
 
 # Function used to generate plots on the tab "histograms and boxplots"
-# function to plot
+# Reused from my final project of statistical learning
 plots <- function(dataset, col, fw=FALSE, hist='default',
                   density='default' , bins='default',
                   xtick_angles='default', sep=FALSE, savefig='default', filename='./plot.png') {
@@ -82,12 +84,37 @@ shinyApp(
             tabPanel("Histograms/Boxplots",
                 sidebarLayout(
                     sidebarPanel(
-                        sidebarPanel(
-                            selectInput("selectVarHB",
-                                label = h4("Select variable to plot"),
-                                choices = names(dem)[3:length(names(dem)-1)],
-                                selected = 1),
-                            
+                        selectInput("selectVarHB",
+                            label = h5("Select variable to plot"),
+                            choices = names(dem)[3:length(names(dem)-1)],
+                            selected = 1),
+                        selectInput("plotHist1",
+                            label = h5("Plot histogram for variable itself"),
+                            choices = c(TRUE, FALSE)
+                        ),
+                        selectInput("plotHist2",
+                            label = h5("Plot histogram for variable by development"),
+                            choices = c(TRUE, FALSE)
+                        ),
+                        selectInput("plotDens1",
+                            label = h5("Plot Density curve for variable itself"),
+                            choices = c(TRUE, FALSE)
+                        ),
+                        selectInput("plotDens1",
+                            label = h5("Plot Density curve for variable by development"),
+                            choices = c(TRUE, FALSE)
+                        ),
+                        textInput("Number of bins for histogram of variable itself",
+
+                        ),
+                        textInput("Number of bins for histogram of variable by development",
+
+                        ),
+                    )
+                    sidebarPanel(
+                        actionButton("Save plot")
+
+
                     ),
                     mainPanel(
                         plotOutput(outputId = "multiPlotsBasic")
