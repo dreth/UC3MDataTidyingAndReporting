@@ -162,6 +162,40 @@ shinyApp(
                         plotOutput(outputId = "multiPlotsBasic")
                     ),
                 ),
+            ),
+
+            # The correlation plots tab will calculate
+            # several correlation coefficients and 
+            # create a scatter plot between variables
+            tabPanel("Correlation plots",
+                sidebarLayout(
+                    sidebarPanel(
+                        radioButtons("radioCorrel",
+                            label = h5("Select what type of plot to create"),
+                            choices = c("Scatter plot","Correlation matrix", "Performance analytics"),
+                            selected = 1
+                        ),
+                        selectInput("selectVar1Scatter",
+                            label = h5("Select variable 1"),
+                            choices = names(dem)[4:length(names(dem))-1],
+                            selected = 1
+                        ),
+                        selectInput("selectVar2Scatter",
+                            label = h5("Select variable 2"),
+                            choices = names(dem)[4:length(names(dem))-1],
+                            selected = 1
+                        ),
+                        checkboxInput("switchScatterVars",
+                            label = h5("Switch Variables"),
+                            value = 0
+                        ),
+                        h5("Correlation table for the selected variables"),
+                        dataTableOutput(outputID = "correlTable")
+                    ),
+                    mainPanel(
+                        plotOutput(outputId = "scatterPlotsCorrel")
+                    ),
+                )
             )
         ),
     
@@ -185,9 +219,7 @@ shinyApp(
 
         # Plot for the histogram/boxplot section
         output$multiPlotsBasic <- renderPlot(
-        {
-            plotHistBox()
-        },
+            {plotHistBox()},
             width = "auto",
             height = reactive(input$heightInputHB)
         )
@@ -205,5 +237,18 @@ shinyApp(
                 )
             }
         )
+
+        # Correlation plots section, plot output
+        output$scatterPlotsCorrel <- renderPlot({
+            if (input$radioCorrel == "Scatter plot") {
+                if (input$selectVar1Scatter != input$selectVar2Scatter) {
+                    if (input$switchScatterVars)
+                    ggplot(dem, aes(input$selectVar1Scatter, input$selectVar2Scatter))
+                }
+                
+            }
+        })
+
+
     }
 )
