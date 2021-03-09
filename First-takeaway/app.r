@@ -12,7 +12,7 @@ require(MASS)
 require(gridExtra)
 
 # importing data
-dem <- read.csv('./data/data.csv')
+dem <- read.csv('https://raw.githubusercontent.com/dreth/UC3MDataTidyingAndReporting/main/First-takeaway/data/data.csv')
 
 # Function used to generate plots on the tab "histograms and boxplots"
 # Recycling this cool function i coded from my final project of statistical learning
@@ -173,7 +173,7 @@ shinyApp(
                         radioButtons("radioCorrel",
                             label = h5("Select what type of plot to create"),
                             choices = c("Scatter plot","Correlation matrix", "Performance analytics"),
-                            selected = 1
+                            selected = "Scatter plot"
                         ),
                         selectInput("selectVar1Scatter",
                             label = h5("Select variable 1"),
@@ -189,8 +189,8 @@ shinyApp(
                             label = h5("Switch Variables"),
                             value = 0
                         ),
-                        h5("Correlation table for the selected variables"),
-                        dataTableOutput(outputID = "correlTable")
+                        strong(h5("Correlation table for the selected variables")),
+                        # dataTableOutput(outputID = "correlTable")
                     ),
                     mainPanel(
                         plotOutput(outputId = "scatterPlotsCorrel")
@@ -200,7 +200,7 @@ shinyApp(
         ),
     
     # Server function for the shiny app
-    server = function(input, output) {
+    server = function(input, output, session) {
         # Plot function call for histogram/boxplot section
         plotHistBox = function() {
             suppressWarnings(
@@ -243,16 +243,22 @@ shinyApp(
             if (input$radioCorrel == "Scatter plot") {
                 if (input$selectVar1Scatter != input$selectVar2Scatter) {
                     if (input$switchScatterVars == 1) {
+                        # scatter plot var 2 vs var 1
                         ggplot(dem, aes(input$selectVar2Scatter, input$selectVar1Scatter))+
                             geom_point()+
+                            theme(axis.title.x = element_blank(),
+                                  axis.title.y = element_blank())+
                             ggtitle(str_interp("${input$selectVar2Scatter} vs ${input$selectVar1Scatter}"))
                     } else {
+                        # scatter plot var 1 vs var 2
                         ggplot(dem, aes(input$selectVar1Scatter, input$selectVar2Scatter))+
                             geom_point()+
+                            theme(axis.title.x = element_blank(),
+                                  axis.title.y = element_blank())+
                             ggtitle(str_interp("${input$selectVar1Scatter} vs ${input$selectVar2Scatter}"))
                     }
                 } else {
-                    renderText({ "You must select different variables!"})
+                    text(x=0.5, y=0.5, col="black", cex=1.6, "You must select different variables!")
                 }
             } else if (input$radioCorrel == "Correlation matrix") {
                 # selecting numeric cols
@@ -261,6 +267,7 @@ shinyApp(
                 # This creates a correlation matrix with maximum
                 # correlation from kendall, pearson and spearman
                 # correlation coefficients
+                cols = names(dem)[4:length(names(dem))-1]
                 methods = c('kendall','spearman','pearson')
                 corr_mat = matrix(rep(0,(length(cols)^2)*4), nrow=length(cols)^2)
                 corr_mat = corr_mat %>% data.frame() %>% setNames(c('var1','var2','coef','corr_type'))
@@ -291,7 +298,7 @@ shinyApp(
                  geom_tile() +
                  geom_text(aes(label=round(coef,2))) +
                  scale_fill_gradient(low="red", high="blue", limits=c(-1,1))+
-                 theme( axis.text.x = element_text(angle = 70, vjust = 1, size = 12, hjust = 1),
+                 theme( axis.text.x = element_text(angle = 70, vjust = 1, size = 9, hjust = 1),
                         axis.title.x = element_blank(),
                         axis.title.y = element_blank(),
                         panel.grid.major = element_blank(),
@@ -305,6 +312,10 @@ shinyApp(
                 # plotting correlation chart with histogram and pearson corr coef
                 chart.Correlation(df, histogram=TRUE, pch=19, method="pearson")
             }
-        })
+        },
+            height = function () {
+                session$clientData$output_scatterPlotsCorrel_width
+            }
+        )
     }
 )
