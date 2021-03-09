@@ -80,50 +80,60 @@ shinyApp(
                 ),
                 
             ),
-            # 
+
+            # Panel for histograms/boxplots
+            # this panel uses the plots function defined
+            # previously before the shiny app block
             tabPanel("Histograms/Boxplots",
                 sidebarLayout(
                     sidebarPanel(
-                        selectInput("selectVarHB",
-                            label = h5("Select variable to plot"),
-                            choices = names(dem)[3:length(names(dem)-1)],
-                            selected = 1
-                        ),
-                        selectInput("plotHist1",
-                            label = h5("Plot histogram for variable itself"),
-                            choices = c(TRUE, FALSE)
-                        ),
-                        selectInput("plotHist2",
-                            label = h5("Plot histogram for variable by development"),
-                            choices = c(TRUE, FALSE)
-                        ),
-                        selectInput("plotDens1",
-                            label = h5("Plot Density curve for variable itself"),
-                            choices = c(TRUE, FALSE)
-                        ),
-                        selectInput("plotDens1",
-                            label = h5("Plot Density curve for variable by development"),
-                            choices = c(TRUE, FALSE)
-                        ),
-                        textInput("binsInput1",
-                            label="Number of bins for histogram of variable itself",
+                        tabsetPanel(
+                            tabPanel("Plot settings",
+                                selectInput("selectVarHB",
+                                    label = h5("Select variable to plot"),
+                                    choices = names(dem)[3:length(names(dem))-1],
+                                    selected = 1
+                                ),
+                                selectInput("plotHist1",
+                                    label = h5("Plot histogram for variable itself"),
+                                    choices = c(TRUE, FALSE)
+                                ),
+                                selectInput("plotHist2",
+                                    label = h5("Plot histogram for variable by development"),
+                                    choices = c(TRUE, FALSE)
+                                ),
+                                selectInput("plotDens1",
+                                    label = h5("Plot Density curve for variable itself"),
+                                    choices = c(TRUE, FALSE)
+                                ),
+                                selectInput("plotDens1",
+                                    label = h5("Plot Density curve for variable by development"),
+                                    choices = c(TRUE, FALSE)
+                                ),
+                                textInput("binsInput1",
+                                    label="Number of bins for histogram of variable itself",
 
-                        ),
-                        textInput("binsInput2",
-                            label="Number of bins for histogram of variable by development",
+                                ),
+                                textInput("binsInput2",
+                                    label="Number of bins for histogram of variable by development",
 
-                        ),
-                    ),
-                    sidebarPanel(
-                        textInput("binsInput2",
-                            label="Width of the image",
+                                )
+                            ),
+                            tabPanel("Save plot",
+                                textInput("binsInput2",
+                                    label="Width of the image",
 
-                        ),
-                        textInput("binsInput1",
-                            "height of the image",
+                                ),
+                                textInput("binsInput1",
+                                    label="height of the image",
 
+                                ),
+                                actionButton("savePlotButton1",
+                                    label="Save plot"
+                                ),
+                            )
                         ),
-                        actionButton("Save plot")
+                        
                     ),
                     mainPanel(
                         plotOutput(outputId = "multiPlotsBasic")
