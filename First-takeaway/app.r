@@ -243,16 +243,68 @@ shinyApp(
             if (input$radioCorrel == "Scatter plot") {
                 if (input$selectVar1Scatter != input$selectVar2Scatter) {
                     if (input$switchScatterVars == 1) {
+                        ggplot(dem, aes(input$selectVar2Scatter, input$selectVar1Scatter))+
+                            geom_point()+
+                            ggtitle(str_interp("${input$selectVar2Scatter} vs ${input$selectVar1Scatter}"))
+                    } else {
                         ggplot(dem, aes(input$selectVar1Scatter, input$selectVar2Scatter))+
-                            geom_pont()+
-                            ggtitle(str"")
+                            geom_point()+
+                            ggtitle(str_interp("${input$selectVar1Scatter} vs ${input$selectVar2Scatter}"))
                     }
-                    
+                } else {
+                    renderText({ "You must select different variables!"})
                 }
-                
+            } else if (input$radioCorrel == "Correlation matrix") {
+                # selecting numeric cols
+                df <- dem[4:length(names(dem))-1]
+
+                # This creates a correlation matrix with maximum
+                # correlation from kendall, pearson and spearman
+                # correlation coefficients
+                methods = c('kendall','spearman','pearson')
+                corr_mat = matrix(rep(0,(length(cols)^2)*4), nrow=length(cols)^2)
+                corr_mat = corr_mat %>% data.frame() %>% setNames(c('var1','var2','coef','corr_type'))
+                cnt = 0
+                for (i in 1:length(cols)) {
+                    for (j in 1:length(cols)) {
+                        cnt = cnt + 1
+                        comb1 <- df %>% dplyr::select(cols[i])
+                        comb2 <- df %>% dplyr::select(cols[j])
+                        maximum_cor = 0
+                        method_used = ''
+                        for (method in methods) {
+                            correl <- cor(comb1[,1],comb2[,1], method=method)
+                            if (abs(correl) > abs(maximum_cor)) {
+                                maximum_cor <- correl
+                                method_used = method
+                            }
+                        }
+                        corr_mat$coef[cnt] = maximum_cor
+                        corr_mat$var1[cnt] = cols[i]
+                        corr_mat$var2[cnt] = cols[j]
+                        corr_mat$corr_type[cnt] = method_used
+                    }
+                }
+
+                # plotting the correlation heatmap
+                ggplot(corr_mat, aes(var1, var2, fill=coef)) +
+                 geom_tile() +
+                 geom_text(aes(label=round(coef,2))) +
+                 scale_fill_gradient(low="red", high="blue", limits=c(-1,1))+
+                 theme( axis.text.x = element_text(angle = 70, vjust = 1, size = 12, hjust = 1),
+                        axis.title.x = element_blank(),
+                        axis.title.y = element_blank(),
+                        panel.grid.major = element_blank(),
+                        panel.border = element_blank(),
+                        panel.background = element_blank(),
+                        axis.ticks = element_blank())
+            } else if (input$radioCorrel == "Performance analytics") {
+                # selecting numeric cols
+                df <- dem[4:length(names(dem))-1]
+
+                # plotting correlation chart with histogram and pearson corr coef
+                chart.Correlation(df, histogram=TRUE, pch=19, method="pearson")
             }
         })
-
-
     }
 )
