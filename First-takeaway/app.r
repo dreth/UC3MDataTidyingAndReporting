@@ -242,8 +242,12 @@ shinyApp(
         output$scatterPlotsCorrel <- renderPlot({
             if (input$radioCorrel == "Scatter plot") {
                 if (input$selectVar1Scatter != input$selectVar2Scatter) {
-                    if (input$switchScatterVars)
-                    ggplot(dem, aes(input$selectVar1Scatter, input$selectVar2Scatter))
+                    if (input$switchScatterVars == 1) {
+                        ggplot(dem, aes(input$selectVar1Scatter, input$selectVar2Scatter))+
+                            geom_pont()+
+                            ggtitle(str"")
+                    }
+                    
                 }
                 
             }
