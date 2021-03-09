@@ -15,7 +15,7 @@ require(gridExtra)
 dem <- read.csv('./data/data.csv')
 
 # Function used to generate plots on the tab "histograms and boxplots"
-# Reused from my final project of statistical learning
+# Recycling this cool function i coded from my final project of statistical learning
 plots <- function(dataset, col, fw=FALSE, hist='default',
                   density='default' , bins='default',
                   xtick_angles='default', sep=FALSE, savefig='default', filename='./plot.png') {
@@ -91,44 +91,67 @@ shinyApp(
                             tabPanel("Plot settings",
                                 selectInput("selectVarHB",
                                     label = h5("Select variable to plot"),
-                                    choices = names(dem)[3:length(names(dem))-1],
+                                    choices = names(dem)[4:length(names(dem))-1],
                                     selected = 1
                                 ),
-                                selectInput("plotHist1",
+                                selectInput("plotHistHB1",
                                     label = h5("Plot histogram for variable itself"),
                                     choices = c(TRUE, FALSE)
                                 ),
-                                selectInput("plotHist2",
+                                selectInput("plotHistHB2",
                                     label = h5("Plot histogram for variable by development"),
                                     choices = c(TRUE, FALSE)
                                 ),
-                                selectInput("plotDens1",
+                                selectInput("plotDensHB1",
                                     label = h5("Plot Density curve for variable itself"),
                                     choices = c(TRUE, FALSE)
                                 ),
-                                selectInput("plotDens1",
+                                selectInput("plotDensHB2",
                                     label = h5("Plot Density curve for variable by development"),
                                     choices = c(TRUE, FALSE)
                                 ),
-                                textInput("binsInput1",
-                                    label="Number of bins for histogram of variable itself",
-
+                                selectInput("fwHB",
+                                    label = h5("Facet Wrap"),
+                                    choices = c(TRUE, FALSE)
                                 ),
-                                textInput("binsInput2",
+                                numericInput("binsInputHB1",
+                                    label="Number of bins for histogram of variable itself",
+                                    value=20,
+                                    min=5,
+                                    max=100,
+                                    step=1
+                                ),
+                                numericInput("binsInputHB2",
                                     label="Number of bins for histogram of variable by development",
-
-                                )
+                                    value=20,
+                                    min=5,
+                                    max=100,
+                                    step=1
+                                ),
+                                numericInput("heightInputHB",
+                                    label="Height of the image",
+                                    value=930,
+                                    min=800,
+                                    max=3000,
+                                    step=1
+                                ),
                             ),
                             tabPanel("Save plot",
-                                textInput("binsInput2",
+                                numericInput("widthInputSaveHB",
                                     label="Width of the image",
-
+                                    value=8,
+                                    min=1,
+                                    max=30,
+                                    step=1
                                 ),
-                                textInput("binsInput1",
-                                    label="height of the image",
-
+                                numericInput("heightInputSaveHB",
+                                    label="Height of the image",
+                                    value=8,
+                                    min=1,
+                                    max=30,
+                                    step=1
                                 ),
-                                actionButton("savePlotButton1",
+                                downloadButton("savePlotButtonHB",
                                     label="Save plot"
                                 ),
                             )
@@ -144,6 +167,39 @@ shinyApp(
     
     # Server function for the shiny app
     server = function(input, output) {
-        
+        # Plot for the histogram/boxplot section
+        output$multiPlotsBasic <- renderPlot(
+        {
+            suppressWarnings(
+                plots(
+                    dataset=dem, 
+                    col=input$selectVarHB,
+                    hist=c(input$plotHistHB1,input$plotHistHB2),
+                    density=c(input$plotDensHB1,input$plotDensHB2),
+                    xtick_angles=c(50,50),
+                    bins=c(input$binsInputHB1,input$binsInputHB2),
+                    fw=input$fwHB,
+                    sep=FALSE,
+                    savefig=c(FALSE,12,12)
+                )
+            )
+        },
+        width = "auto",
+        height = reactive(input$heightInputHB)
+        )
+
+        # Download button for histogram/boxplot section
+        output$savePlotButtonHB = downloadHandler(
+            filename = str_interp("${input$selectVarHB}.png")
+            content = function(file) {
+                ggsave(
+                    file,  
+                    width=savefig[2],
+                    height=savefig[3], 
+                    plot=output$multiPlotsBasic, 
+                    device="png"
+                )
+            }
+        )
     }
 )
