@@ -167,9 +167,8 @@ shinyApp(
     
     # Server function for the shiny app
     server = function(input, output) {
-        # Plot for the histogram/boxplot section
-        output$multiPlotsBasic <- renderPlot(
-        {
+        # Plot function call for histogram/boxplot section
+        plotHistBox = function() {
             suppressWarnings(
                 plots(
                     dataset=dem, 
@@ -179,10 +178,15 @@ shinyApp(
                     xtick_angles=c(50,50),
                     bins=c(input$binsInputHB1,input$binsInputHB2),
                     fw=input$fwHB,
-                    sep=FALSE,
-                    savefig=c(FALSE,12,12)
+                    sep=FALSE
                 )
             )
+        }
+
+        # Plot for the histogram/boxplot section
+        output$multiPlotsBasic <- renderPlot(
+        {
+            plotHistBox()
         },
         width = "auto",
         height = reactive(input$heightInputHB)
@@ -190,13 +194,13 @@ shinyApp(
 
         # Download button for histogram/boxplot section
         output$savePlotButtonHB = downloadHandler(
-            filename = str_interp("${input$selectVarHB}.png")
+            filename = str_interp("${input$selectVarHB}.png"),
             content = function(file) {
                 ggsave(
-                    file,  
-                    width=savefig[2],
-                    height=savefig[3], 
-                    plot=output$multiPlotsBasic, 
+                    file,
+                    width=input$widthInputSaveHB,
+                    height=input$heightInputSaveHB, 
+                    plot=plotHistBox(),
                     device="png"
                 )
             }
