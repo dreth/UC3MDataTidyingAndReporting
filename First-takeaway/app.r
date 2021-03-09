@@ -17,7 +17,7 @@ ui <- navbarPage(theme = shinytheme("slate"), "Country metrics",
                     "This is the 'primary World Bank collection of development indicators' as stated on the database description. It has lots of economic, education, energy use, and population specific metrics."),
                 p("The dataset used (as it was used) can be found in the file tree of the repository for this shiny app. the file is easily identifiable within a folder called 'data' and named 'data.csv'."),
                 br(),
-                img(src="worldbanklogo.png", width=711.11, height=400)
+                img(src="https://raw.githubusercontent.com/dreth/UC3MDataTidyingAndReporting/main/First-takeaway/www/worldbanklogo.png", width=711.11, height=400)
             ),
             
         )
