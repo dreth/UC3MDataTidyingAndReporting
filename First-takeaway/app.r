@@ -63,6 +63,24 @@ plots <- function(dataset, col, fw=FALSE, hist='default',
                                  arrangeGrob(p1,p2,p3,p4, nrow=4))}
 }
 
+# Function to plot correlations by group or individually for 2 vars
+# along with performance analytics chart correlation plot
+correl_plots <- function(dataset, inputs, group=TRUE, invert=FALSE) {
+    scatterP <- ggplot(dataset)+
+                    theme(axis.title.x = element_blank(),
+                          axis.title.y = element_blank())
+    if (invert == TRUE) {inputs <- rev(inputs)}
+    if (group == TRUE) {
+        result <- scatterP+
+                    geom_point(aes_string(inputs[1], inputs[2], color="hdi_cat"))+
+                    ggtitle(str_interp("${inputs[1]} vs ${inputs[2]} by HDI group"))
+    } else {
+        result <- scatterP+
+            geom_point(aes_string(inputs[1], inputs[2]))+
+            ggtitle(str_interp("${inputs[1]} vs ${inputs[2]}"))
+    }
+    result
+}
 
 shinyApp(
     # UI of the application
@@ -248,33 +266,29 @@ shinyApp(
         # Correlation plots section, plot output
         output$scatterPlotsCorrel <- renderPlot({
             if (input$radioCorrel == "Scatter plot") {
-                if (input$selectVar1Scatter != input$selectVar2Scatter) {
-                    scatterP <- ggplot(dem)+
-                                theme(axis.title.x = element_blank(),
-                                    axis.title.y = element_blank())
+                # correl inputs vector to simplify notation
+                correlInputs <- c(input$selectVar1Scatter, 
+                                  input$selectVar2Scatter)
+                if (correlInputs[1] != correlInputs[2]) {
                     if (input$switchScatterVars == 1) {
                         if (input$scatterGroupByHDI == 1) {
                             # scatter plot var 2 vs var 1 grouped by HDI
-                            scatterP+
-                                geom_point(aes_string(input$selectVar2Scatter, input$selectVar1Scatter, color="hdi_cat"))+
-                                ggtitle(str_interp("${input$selectVar2Scatter} vs ${input$selectVar1Scatter} by HDI group"))
+                            correl_plots(dem, inputs=correlInputs,
+                                         group=TRUE, invert=TRUE)
                         } else {
                             # scatter plot var 2 vs var 1 not grouped
-                            scatterP+
-                                geom_point(aes_string(input$selectVar2Scatter, input$selectVar1Scatter))+
-                                ggtitle(str_interp("${input$selectVar2Scatter} vs ${input$selectVar1Scatter}"))
+                            correl_plots(dem, inputs=correlInputs,
+                                         group=FALSE, invert=TRUE)
                         }
                     } else {
                         if (input$scatterGroupByHDI == 1) {
                             # scatter plot var 1 vs var 2 grouped by HDI
-                            scatterP+
-                                geom_point(aes_string(input$selectVar1Scatter, input$selectVar2Scatter, color="hdi_cat"))+
-                                ggtitle(str_interp("${input$selectVar1Scatter} vs ${input$selectVar2Scatter} by HDI group"))
+                            correl_plots(dem, inputs=correlInputs,
+                                         group=TRUE, invert=FALSE)
                         } else {
                             # scatter plot var 1 vs var 2 not grouped
-                            scatterP+
-                            geom_point(aes_string(input$selectVar1Scatter, input$selectVar2Scatter))+
-                            ggtitle(str_interp("${input$selectVar1Scatter} vs ${input$selectVar2Scatter}"))
+                            correl_plots(dem, inputs=correlInputs,
+                                         group=FALSE, invert=FALSE)
                         }
                     }
                 } else {
