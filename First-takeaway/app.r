@@ -299,7 +299,10 @@ shinyApp(
                                     label = h4("Variable selection"),
                                     choices = cols,
                                     options = list(maxItems = length(cols))
-                                )
+                                ),
+                                downloadButton("downloadReport",
+                                    label="Generate report"
+                                ),
                             )
                         )
                     ),
@@ -448,5 +451,16 @@ shinyApp(
             }
             data.frame(method=correlCoefs, coefficient=correlValues)
         })
+
+        # Plot for top N countries
+        output$topNPlot <- renderPlot({
+            if (input$radioCorrel == "Top") {
+                demTopN <- dem %>% dplyr::arrange(input$selectVarTop, desc)
+            } else {
+                demTopN <- dem %>% dplyr::arrange(input$selectVarTop)
+            }
+            ggplot(demTopN, aes(x=country_name, y=input$selectVarTop))
+        })
     }
 )
+hq
