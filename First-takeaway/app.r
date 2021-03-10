@@ -14,6 +14,9 @@ require(gridExtra)
 # importing data
 dem <- read.csv('https://raw.githubusercontent.com/dreth/UC3MDataTidyingAndReporting/main/First-takeaway/data/data.csv')
 
+# numeric columns
+cols <- names(dem)[4:length(names(dem))-1]
+
 # Function used to generate plots on the tab "histograms and boxplots"
 # Recycling this cool function i coded from my final project of statistical learning
 plots <- function(dataset, col, fw=FALSE, hist='default',
@@ -90,28 +93,28 @@ shinyApp(
                         tabsetPanel(
                             tabPanel("Plot settings",
                                 selectInput("selectVarHB",
-                                    label = h5("Select variable to plot"),
-                                    choices = names(dem)[4:length(names(dem))-1],
+                                    label = h4("Select variable to plot"),
+                                    choices = cols,
                                     selected = 1
                                 ),
                                 selectInput("plotHistHB1",
-                                    label = h5("Plot histogram for variable itself"),
+                                    label = h4("Plot histogram for variable itself"),
                                     choices = c(TRUE, FALSE)
                                 ),
                                 selectInput("plotHistHB2",
-                                    label = h5("Plot histogram for variable by development"),
+                                    label = h4("Plot histogram for variable by development"),
                                     choices = c(TRUE, FALSE)
                                 ),
                                 selectInput("plotDensHB1",
-                                    label = h5("Plot Density curve for variable itself"),
+                                    label = h4("Plot Density curve for variable itself"),
                                     choices = c(TRUE, FALSE)
                                 ),
                                 selectInput("plotDensHB2",
-                                    label = h5("Plot Density curve for variable by development"),
+                                    label = h4("Plot Density curve for variable by development"),
                                     choices = c(TRUE, FALSE)
                                 ),
                                 selectInput("fwHB",
-                                    label = h5("Facet Wrap"),
+                                    label = h4("Facet Wrap"),
                                     choices = c(TRUE, FALSE)
                                 ),
                                 numericInput("binsInputHB1",
@@ -171,26 +174,30 @@ shinyApp(
                 sidebarLayout(
                     sidebarPanel(
                         radioButtons("radioCorrel",
-                            label = h5("Select what type of plot to create"),
+                            label = h4("Select what type of plot to create"),
                             choices = c("Scatter plot","Correlation matrix", "Performance analytics"),
                             selected = "Scatter plot"
                         ),
                         selectInput("selectVar1Scatter",
-                            label = h5("Select variable 1"),
-                            choices = names(dem)[4:length(names(dem))-1],
-                            selected = 1
+                            label = h4("Select variable 1"),
+                            choices = cols,
+                            selected = sample(cols,1)
                         ),
                         selectInput("selectVar2Scatter",
-                            label = h5("Select variable 2"),
-                            choices = names(dem)[4:length(names(dem))-1],
-                            selected = 1
+                            label = h4("Select variable 2"),
+                            choices = cols,
+                            selected = sample(cols,1)
                         ),
                         checkboxInput("switchScatterVars",
-                            label = h5("Switch Variables"),
+                            label = "Switch Variables",
                             value = 0
                         ),
-                        strong(h5("Correlation table for the selected variables")),
-                        # dataTableOutput(outputID = "correlTable")
+                        checkboxInput("scatterGroupByHDI",
+                            label = "Color by HDI",
+                            value = 1
+                        ),
+                        strong(h4("Correlation table for the selected variables")),
+                        tableOutput(outputId = "correlTable")
                     ),
                     mainPanel(
                         plotOutput(outputId = "scatterPlotsCorrel")
@@ -242,23 +249,36 @@ shinyApp(
         output$scatterPlotsCorrel <- renderPlot({
             if (input$radioCorrel == "Scatter plot") {
                 if (input$selectVar1Scatter != input$selectVar2Scatter) {
+                    scatterP <- ggplot(dem)+
+                                theme(axis.title.x = element_blank(),
+                                    axis.title.y = element_blank())
                     if (input$switchScatterVars == 1) {
-                        # scatter plot var 2 vs var 1
-                        ggplot(dem, aes(input$selectVar2Scatter, input$selectVar1Scatter))+
-                            geom_point()+
-                            theme(axis.title.x = element_blank(),
-                                  axis.title.y = element_blank())+
-                            ggtitle(str_interp("${input$selectVar2Scatter} vs ${input$selectVar1Scatter}"))
+                        if (input$scatterGroupByHDI == 1) {
+                            # scatter plot var 2 vs var 1 grouped by HDI
+                            scatterP+
+                                geom_point(aes_string(input$selectVar2Scatter, input$selectVar1Scatter, color="hdi_cat"))+
+                                ggtitle(str_interp("${input$selectVar2Scatter} vs ${input$selectVar1Scatter} by HDI group"))
+                        } else {
+                            # scatter plot var 2 vs var 1 not grouped
+                            scatterP+
+                                geom_point(aes_string(input$selectVar2Scatter, input$selectVar1Scatter))+
+                                ggtitle(str_interp("${input$selectVar2Scatter} vs ${input$selectVar1Scatter}"))
+                        }
                     } else {
-                        # scatter plot var 1 vs var 2
-                        ggplot(dem, aes(input$selectVar1Scatter, input$selectVar2Scatter))+
-                            geom_point()+
-                            theme(axis.title.x = element_blank(),
-                                  axis.title.y = element_blank())+
+                        if (input$scatterGroupByHDI == 1) {
+                            # scatter plot var 1 vs var 2 grouped by HDI
+                            scatterP+
+                                geom_point(aes_string(input$selectVar1Scatter, input$selectVar2Scatter, color="hdi_cat"))+
+                                ggtitle(str_interp("${input$selectVar1Scatter} vs ${input$selectVar2Scatter} by HDI group"))
+                        } else {
+                            # scatter plot var 1 vs var 2 not grouped
+                            scatterP+
+                            geom_point(aes_string(input$selectVar1Scatter, input$selectVar2Scatter))+
                             ggtitle(str_interp("${input$selectVar1Scatter} vs ${input$selectVar2Scatter}"))
+                        }
                     }
                 } else {
-                    text(x=0.5, y=0.5, col="black", cex=1.6, "You must select different variables!")
+                    text(x=0.5, y=0.5, col="black", cex=2, "You must select different variables!")
                 }
             } else if (input$radioCorrel == "Correlation matrix") {
                 # selecting numeric cols
@@ -267,7 +287,6 @@ shinyApp(
                 # This creates a correlation matrix with maximum
                 # correlation from kendall, pearson and spearman
                 # correlation coefficients
-                cols = names(dem)[4:length(names(dem))-1]
                 methods = c('kendall','spearman','pearson')
                 corr_mat = matrix(rep(0,(length(cols)^2)*4), nrow=length(cols)^2)
                 corr_mat = corr_mat %>% data.frame() %>% setNames(c('var1','var2','coef','corr_type'))
@@ -296,15 +315,14 @@ shinyApp(
                 # plotting the correlation heatmap
                 ggplot(corr_mat, aes(var1, var2, fill=coef)) +
                  geom_tile() +
-                 geom_text(aes(label=round(coef,2))) +
                  scale_fill_gradient(low="red", high="blue", limits=c(-1,1))+
-                 theme( axis.text.x = element_text(angle = 70, vjust = 1, size = 9, hjust = 1),
-                        axis.title.x = element_blank(),
-                        axis.title.y = element_blank(),
-                        panel.grid.major = element_blank(),
-                        panel.border = element_blank(),
-                        panel.background = element_blank(),
-                        axis.ticks = element_blank())
+                 theme(axis.text.x = element_text(angle = 70, vjust = 1, size = 9, hjust = 1),
+                       axis.title.x = element_blank(),
+                       axis.title.y = element_blank(),
+                       panel.grid.major = element_blank(),
+                       panel.border = element_blank(),
+                       panel.background = element_blank(),
+                       axis.ticks = element_blank())
             } else if (input$radioCorrel == "Performance analytics") {
                 # selecting numeric cols
                 df <- dem[4:length(names(dem))-1]
@@ -317,5 +335,18 @@ shinyApp(
                 session$clientData$output_scatterPlotsCorrel_width
             }
         )
+
+        # data table with correlations of the 2 variables selected
+        # in the scatter plot section
+        output$correlTable <- renderTable({
+            correlCoefs <- c('kendall','spearman','pearson')
+            correlValues <- rep(0,length(correlCoefs))
+            for (i in 1:length(correlCoefs)) {
+                correlV1 <- dem %>% dplyr::select(input$selectVar1Scatter) %>% unlist()
+                correlV2 <- dem %>% dplyr::select(input$selectVar2Scatter) %>% unlist()
+                correlValues[i] <- cor(correlV1,correlV2, method=correlCoefs[i])
+            }
+            data.frame(method=correlCoefs, coefficient=correlValues)
+        })
     }
 )
