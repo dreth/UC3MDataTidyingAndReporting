@@ -17,85 +17,11 @@ dem <- read.csv('https://raw.githubusercontent.com/dreth/UC3MDataTidyingAndRepor
 # numeric columns
 cols <- names(dem)[4:length(names(dem))-1]
 
-# Function used to generate plots on the tab "histograms and boxplots"
-# Recycling this cool function i coded from my final project of statistical learning
-plots <- function(dataset, col, fw=FALSE, hist='default',
-                  density='default' , bins='default',
-                  xtick_angles='default', sep=FALSE, savefig='default', filename='./plot.png') {
-    var <- dataset %>% dplyr::select(col)
-    if (bins == 'default') {bins <- rep(10,2)}
-    if (xtick_angles == 'default') {xtick_angles <- rep(90,2)}
-    if (hist == 'default') {hist <- c(FALSE,FALSE)}
-    if (density == 'default') {density <- c(TRUE,TRUE)}
-    if (savefig == 'default') {savefig <- c(FALSE,14,14)}
 
-    p1 <- dataset %>% ggplot(aes(x=var[,1])) +
-        geom_boxplot() +
-        ggtitle(str_interp("${col}")) +
-        theme(axis.title.x=element_blank(),axis.text.y=element_blank())
-    p2 <- dataset %>% ggplot(aes(x=var[,1], fill=hdi_cat)) +
-        geom_boxplot() +
-        ggtitle(str_interp("${col} grouped by HDI")) +
-        theme(axis.title.x=element_blank(),axis.text.y=element_blank())
-    p3 <- dataset %>% ggplot(aes(x=var[,1])) +
-        ggtitle(str_interp("${col}")) +
-        theme(axis.title.x=element_blank(),
-                axis.text.x = element_text(angle = xtick_angles[1]))
-    p4 <- dataset %>% ggplot(aes(x=var[,1])) +
-        ggtitle(str_interp("${col} by HDI group")) +
-        theme(axis.title.x=element_blank(),
-                axis.text.x = element_text(angle = xtick_angles[2]))
-    if (hist[1] == TRUE) {
-        p3 <- p3 + geom_histogram(aes(y=..density..),bins=bins[1])}
-    if (hist[2] == TRUE) {
-        p4 <- p4 + geom_histogram(show.legend = FALSE,bins=bins[2],
-                                  aes(fill=hdi_cat,y=..density..))}
-    if (density[1] == TRUE) {
-        p3 <- p3 + geom_density()}
-    if (density[2] == TRUE) {
-        p4 <- p4 + geom_density(aes(group=hdi_cat,colour=hdi_cat,fill=hdi_cat))}
-    if (fw == TRUE) {p4 <- p4 + facet_wrap(~hdi_cat, nrow = 1)}
-    if (sep == TRUE) {
-        grid.arrange(p1,p2, nrow=2)
-        grid.arrange(p3,p4, nrow=2)}
-    else {grid.arrange(p1,p2,p3,p4, nrow=4)}
-    if (savefig[1] == TRUE) {ggsave(file=filename, width=savefig[2], height=savefig[3],
-                                 arrangeGrob(p1,p2,p3,p4, nrow=4))}
-}
 
-# Function to plot correlations by group or individually for 2 vars
-# along with performance analytics chart correlation plot
-correl_plots <- function(dataset, inputs, group=TRUE, invert=FALSE) {
-    scatterP <- ggplot(dataset)+
-                    theme(axis.title.x = element_blank(),
-                          axis.title.y = element_blank())
-    if (invert == TRUE) {inputs <- rev(inputs)}
-    if (group == TRUE) {
-        result <- scatterP+
-                    geom_point(aes_string(inputs[1], inputs[2], color="hdi_cat"))+
-                    ggtitle(str_interp("${inputs[1]} vs ${inputs[2]} by HDI group"))
-    } else {
-        result <- scatterP+
-            geom_point(aes_string(inputs[1], inputs[2]))+
-            ggtitle(str_interp("${inputs[1]} vs ${inputs[2]}"))
-    }
-    result
-}
 
-# Function to plot barplots for the top N countries tab
-topn_barplot <- function(dataset, identity, vars) {
-    if (length(vars) == 1) {
-        ggplot(dem, aes_string(x=identity, y=vars[1]))+
-            geom_bar(stat="identity")
-    } else {
-        par(mfrow=c(length(vars),1))
-        for (i in 1:length(vars)) {
-            ggplot(dem, aes_string(x=identity, y=vars[i]))+
-                geom_bar(stat="identity")
-        }
-    }
-    
-}
+
+
 
 shinyApp(
     # UI of the application
@@ -300,7 +226,7 @@ shinyApp(
                                     max=length(dem$country_name),
                                     step=1
                                 ),
-                                radioButtons("radioCorrel",
+                                radioButtons("radioTopOrBottom",
                                     label = h4("Plot top or bottom N countries"),
                                     choices = c("Top","Bottom"),
                                     selected = "Top"
@@ -339,6 +265,68 @@ shinyApp(
     
     # Server function for the shiny app
     server = function(input, output, session) {
+
+        # %% HELPER FUNCTIONS %%
+        # Function used to generate plots on the tab "histograms and boxplots"
+        # Recycling this cool function i coded from my final project of statistical learning
+        plots <- function(dataset, col, fw=FALSE, hist='default',
+                        density='default' , bins='default',
+                        xtick_angles='default') {
+            var <- dataset %>% dplyr::select(col)
+            if (bins == 'default') {bins <- rep(10,2)}
+            if (xtick_angles == 'default') {xtick_angles <- rep(90,2)}
+            if (hist == 'default') {hist <- c(FALSE,FALSE)}
+            if (density == 'default') {density <- c(TRUE,TRUE)}
+
+            p1 <- dataset %>% ggplot(aes(x=var[,1])) +
+                geom_boxplot() +
+                ggtitle(str_interp("${col}")) +
+                theme(axis.title.x=element_blank(),axis.text.y=element_blank())
+            p2 <- dataset %>% ggplot(aes(x=var[,1], fill=hdi_cat)) +
+                geom_boxplot() +
+                ggtitle(str_interp("${col} grouped by HDI")) +
+                theme(axis.title.x=element_blank(),axis.text.y=element_blank())
+            p3 <- dataset %>% ggplot(aes(x=var[,1])) +
+                ggtitle(str_interp("${col}")) +
+                theme(axis.title.x=element_blank(),
+                        axis.text.x = element_text(angle = xtick_angles[1]))
+            p4 <- dataset %>% ggplot(aes(x=var[,1])) +
+                ggtitle(str_interp("${col} by HDI group")) +
+                theme(axis.title.x=element_blank(),
+                        axis.text.x = element_text(angle = xtick_angles[2]))
+            if (hist[1] == TRUE) {
+                p3 <- p3 + geom_histogram(aes(y=..density..),bins=bins[1])}
+            if (hist[2] == TRUE) {
+                p4 <- p4 + geom_histogram(show.legend = FALSE,bins=bins[2],
+                                        aes(fill=hdi_cat,y=..density..))}
+            if (density[1] == TRUE) {
+                p3 <- p3 + geom_density()}
+            if (density[2] == TRUE) {
+                p4 <- p4 + geom_density(aes(group=hdi_cat,colour=hdi_cat,fill=hdi_cat))}
+            if (fw == TRUE) {p4 <- p4 + facet_wrap(~hdi_cat, nrow = 1)}
+            grid.arrange(p1,p2,p3,p4, nrow=4)
+        }
+
+        # Function to plot correlations by group or individually for 2 vars
+        # along with performance analytics chart correlation plot
+        correl_plots <- function(dataset, inputs, group=TRUE, invert=FALSE) {
+            scatterP <- ggplot(dataset)+
+                            theme(axis.title.x = element_blank(),
+                                axis.title.y = element_blank())
+            if (invert == TRUE) {inputs <- rev(inputs)}
+            if (group == TRUE) {
+                result <- scatterP+
+                            geom_point(aes_string(inputs[1], inputs[2], color="hdi_cat"))+
+                            ggtitle(str_interp("${inputs[1]} vs ${inputs[2]} by HDI group"))
+            } else {
+                result <- scatterP+
+                    geom_point(aes_string(inputs[1], inputs[2]))+
+                    ggtitle(str_interp("${inputs[1]} vs ${inputs[2]}"))
+            }
+            result
+        }
+
+
         # Plot function call for histogram/boxplot section
         plotHistBox = function() {
             suppressWarnings(
@@ -349,12 +337,34 @@ shinyApp(
                     density=c(input$plotDensHB1,input$plotDensHB2),
                     xtick_angles=c(50,50),
                     bins=c(input$binsInputHB1,input$binsInputHB2),
-                    fw=input$fwHB,
-                    sep=FALSE
+                    fw=input$fwHB
                 )
             )
         }
 
+        # Function to plot barplots for the top N countries tab
+        topn_barplot <- function(dataset, identity, vars, orient, amount) {
+            if (length(vars) == 1) {
+                demTopN <- dem[1:amount,vars[1]]
+                ggplot(demTopN, aes_string(x=identity, y=vars[1]))+
+                    geom_bar(stat="identity")
+            } else {
+                par(mfrow=c(length(vars),1))
+                for (i in 1:length(vars)) {
+                    if (orient == "Top") {
+                        demTopN <- dem %>% dplyr::arrange(vars[i], desc)
+                    } else {
+                        demTopN <- dem %>% dplyr::arrange(vars[i])
+                    }
+                    demTopN <- demTopN[1:amount,vars[i]]
+                    ggplot(demTopN, aes_string(x=identity, y=vars[i]))+
+                        geom_bar(stat="identity")
+                }
+            }
+            
+        }
+        
+        # %% OUTPUTS %%
         # Plot for the histogram/boxplot section
         output$multiPlotsBasic <- renderPlot(
             {plotHistBox()},
@@ -478,20 +488,17 @@ shinyApp(
         })
 
         # Plot for top N countries
-        # output$topNPlot <- renderPlot({
-        #     if (input$radioCorrel == "Top") {
-        #         demTopN <- dem %>% dplyr::arrange(input$selectVarTop, desc)
-        #     } else {
-        #         demTopN <- dem %>% dplyr::arrange(input$selectVarTop)
-        #     }
-
-        #     if (input$)
-            
-        # },
-        #     height = function () {
-        #         session$clientData$output_scatterPlotsCorrel_width * 1.5
-        #     }
-        # )
+        output$topNPlot <- renderPlot({
+            topn_barplot(dataset=dem,
+                         identity=input$selectIdentityTop,
+                         vars=input$selectVarsTop,
+                         orient=input$radioTopOrBottom,
+                         amount=input$selectTopN)
+        },
+            height = function () {
+                session$clientData$output_scatterPlotsCorrel_width * 1.5
+            }
+        )
     }
 )
 
