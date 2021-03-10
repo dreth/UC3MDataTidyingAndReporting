@@ -82,6 +82,21 @@ correl_plots <- function(dataset, inputs, group=TRUE, invert=FALSE) {
     result
 }
 
+# Function to plot barplots for the top N countries tab
+topn_barplot <- function(dataset, identity, vars) {
+    if (length(vars) == 1) {
+        ggplot(dem, aes_string(x=identity, y=vars[1]))+
+            geom_bar(stat="identity")
+    } else {
+        par(mfrow=c(length(vars),1))
+        for (i in 1:length(vars)) {
+            ggplot(dem, aes_string(x=identity, y=vars[i]))+
+                geom_bar(stat="identity")
+        }
+    }
+    
+}
+
 shinyApp(
     # UI of the application
     ui = navbarPage(theme = shinytheme("slate"), "Country metrics",
@@ -268,10 +283,15 @@ shinyApp(
 
                             # Plot settings
                             tabPanel("Plot parameters",
-                                selectInput("selectVarTop",
-                                    label = h4("Select variable to plot"),
+                                selectizeInput("selectVarsTop",
+                                    label = h4("Select variables to plot"),
                                     choices = cols,
-                                    selected = 1
+                                    options = list(maxItems = length(cols))
+                                ),
+                                selectInput("selectIdentityTop",
+                                    label = h4("Use country code or country for x-axis"),
+                                    choices = c("country_name", "country_code"),
+                                    selected = "country_name"
                                 ),
                                 numericInput("selectTopN",
                                     label="How many top/bottom countries to plot",
@@ -281,10 +301,10 @@ shinyApp(
                                     step=1
                                 ),
                                 radioButtons("radioCorrel",
-                                    label = h4("Plot top or bottom N"),
+                                    label = h4("Plot top or bottom N countries"),
                                     choices = c("Top","Bottom"),
                                     selected = "Top"
-                                ),
+                                )
                             ),
 
                             # Report parameters
@@ -300,9 +320,13 @@ shinyApp(
                                     choices = cols,
                                     options = list(maxItems = length(cols))
                                 ),
+                                checkboxInput("matchTopNSelection",
+                                    label = "Match variable selection of plot params",
+                                    value = 1
+                                ),
                                 downloadButton("downloadReport",
                                     label="Generate report"
-                                ),
+                                )
                             )
                         )
                     ),
@@ -434,6 +458,7 @@ shinyApp(
                 chart.Correlation(df, histogram=TRUE, pch=19, method="pearson")
             }
         },
+            # match width for a square plot
             height = function () {
                 session$clientData$output_scatterPlotsCorrel_width
             }
@@ -453,14 +478,20 @@ shinyApp(
         })
 
         # Plot for top N countries
-        output$topNPlot <- renderPlot({
-            if (input$radioCorrel == "Top") {
-                demTopN <- dem %>% dplyr::arrange(input$selectVarTop, desc)
-            } else {
-                demTopN <- dem %>% dplyr::arrange(input$selectVarTop)
-            }
-            ggplot(demTopN, aes(x=country_name, y=input$selectVarTop))
-        })
+        # output$topNPlot <- renderPlot({
+        #     if (input$radioCorrel == "Top") {
+        #         demTopN <- dem %>% dplyr::arrange(input$selectVarTop, desc)
+        #     } else {
+        #         demTopN <- dem %>% dplyr::arrange(input$selectVarTop)
+        #     }
+
+        #     if (input$)
+            
+        # },
+        #     height = function () {
+        #         session$clientData$output_scatterPlotsCorrel_width * 1.5
+        #     }
+        # )
     }
 )
-hq
+
