@@ -96,7 +96,7 @@ shinyApp(
                         a("World Development Indicators database",href="https://databank.worldbank.org/source/world-development-indicators"),
                         "This is the 'primary World Bank collection of development indicators' as stated on the database description. It has lots of economic, education, energy use, and population specific metrics."),
                     p("The dataset used (as it was used) can be found in the file tree of the repository for this shiny app. the file is easily identifiable within a folder called 'data' and named 'data.csv'."),
-                    h3("Dataset variables:"),
+                    h4("Dataset variables:"),
                     tags$ul(
                         tags$li(strong("year_code"), ": code for the year as the world bank databank sets it"),
                         tags$li(strong("country_name"), ": name of the country"),

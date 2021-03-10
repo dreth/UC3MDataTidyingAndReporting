@@ -1,0 +1,15 @@
+---
+title: 'Country Metrics Report'
+author: 'Daniel A.'
+date: "`r format(Sys.time(), '%Y, %B, %d, %H')`"
+output: 'pdf_document'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE,
+    comment = '#>',
+    fig.path = './figures/'
+)
+```
+
