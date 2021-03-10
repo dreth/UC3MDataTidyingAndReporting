@@ -96,6 +96,37 @@ shinyApp(
                         a("World Development Indicators database",href="https://databank.worldbank.org/source/world-development-indicators"),
                         "This is the 'primary World Bank collection of development indicators' as stated on the database description. It has lots of economic, education, energy use, and population specific metrics."),
                     p("The dataset used (as it was used) can be found in the file tree of the repository for this shiny app. the file is easily identifiable within a folder called 'data' and named 'data.csv'."),
+                    h3("Dataset variables:"),
+                    tags$ul(
+                        tags$li(strong("year_code"), ": code for the year as the world bank databank sets it"),
+                        tags$li(strong("country_name"), ": name of the country"),
+                        tags$li(strong("country_code"), ": alpha-3 ISO 3166 code for the country"),
+                        tags$li(strong("foreign_inv_inflows"), ": Foreign direct investment, net inflows (BoP, current US$)"),
+                        tags$li(strong("exports_perc_gdp"), ": Exports of goods and services (as a % of GDP)"),
+                        tags$li(strong("inflation_perc"), ": Inflation, consumer prices (annual %)"),
+                        tags$li(strong("education_years"), ": Compulsory education, duration (years)"),
+                        tags$li(strong("education_perc_gdp"), ": Government expenditure on education, total (as a % of GDP)"),
+                        tags$li(strong("gds_perc_gdp"), ": Gross domestic savings (as a % of GDP)"),
+                        tags$li(strong("gross_savings_perc_gdp"), ": Gross savings (as a % of GDP)"),
+                        tags$li(strong("int_tourism_arrivals"), ": International tourism, number of arrivals"),
+                        tags$li(strong("int_tourism_receipts"), ": International tourism, receipts (in current US$)"),
+                        tags$li(strong("perc_internet_users"), ": Individuals using the Internet (as a % of population)"),
+                        tags$li(strong("access_to_electricity"), ": Access to electricity (% of population)"),
+                        tags$li(strong("agricultural_land"), ": Agricultural land (% of land area)"),
+                        tags$li(strong("birth_rate"), ": Birth rate, crude (per 1,000 people)"),
+                        tags$li(strong("gne"), ": Gross national expenditure (% of GDP)"),
+                        tags$li(strong("mobile_subscriptions"), ": Mobile cellular subscriptions (per 100 people)"),
+                        tags$li(strong("infant_mort_rate"), ": Mortality rate, infant (per 1,000 live births)"),
+                        tags$li(strong("sex_ratio"), ": Sex ratio at birth (male births per female births)"),
+                        tags$li(strong("greenhouse_gas_em"), ": Total greenhouse gas emissions (kt of CO2 equivalent)"),
+                        tags$li(strong("urban_pop_perc"), ": Urban population (% of total population)"),
+                        tags$li(strong("hdi"), ": human development index "),
+                        tags$li(strong("hdi_cat"), ": Human development index as a category"),
+                        tags$li(strong("life_exp"), ": Life expectancy at birth, total (years)"),
+                        tags$li(strong("gdp"), ": GDP (current US$) "),
+                        tags$li(strong("gni"), ": GNI (current US$)"),
+                        tags$li(strong("fertility_rate"), ": Fertility rate, total (births per woman)")
+                    ),
                     br(),
                     img(src="https://raw.githubusercontent.com/dreth/UC3MDataTidyingAndReporting/main/First-takeaway/www/worldbanklogo.png", width=462.222, height=260)
                 ),
@@ -220,6 +251,61 @@ shinyApp(
                     mainPanel(
                         plotOutput(outputId = "scatterPlotsCorrel")
                     ),
+                )
+            ),
+
+            # Top N countries (selected by the user)
+            # this section includes a report on these
+            tabPanel("Top n countries",
+                sidebarLayout(
+                    sidebarPanel(
+                        tabsetPanel(
+                            # information on this section
+                            tabPanel("Information",
+                                p("This section will allow you to create plots representative of the top (or bottom) countries per each development variable."),
+                                p("After a complete selection, a report will be created which details which countries are in the top and their respective HDI category.")
+                            ),
+
+                            # Plot settings
+                            tabPanel("Plot parameters",
+                                selectInput("selectVarTop",
+                                    label = h4("Select variable to plot"),
+                                    choices = cols,
+                                    selected = 1
+                                ),
+                                numericInput("selectTopN",
+                                    label="How many top/bottom countries to plot",
+                                    value=10,
+                                    min=1,
+                                    max=length(dem$country_name),
+                                    step=1
+                                ),
+                                radioButtons("radioCorrel",
+                                    label = h4("Plot top or bottom N"),
+                                    choices = c("Top","Bottom"),
+                                    selected = "Top"
+                                ),
+                            ),
+
+                            # Report parameters
+                            tabPanel("Report parameters",
+                                h4("Report parameter selection"),
+                                p("Select what metrics and variables to include in the top N report"),
+                                checkboxGroupInput("checkReportParameters",
+                                    label = h4("Metric selection"),
+                                    choices = c("Mean", "Median", "Max", "Min")
+                                ),
+                                selectizeInput("checkReportVariables",
+                                    label = h4("Variable selection"),
+                                    choices = cols,
+                                    options = list(maxItems = length(cols))
+                                )
+                            )
+                        )
+                    ),
+                    mainPanel(
+                        plotOutput(outputId = "topNPlot")
+                    )
                 )
             )
         ),
