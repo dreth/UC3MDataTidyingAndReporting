@@ -17,6 +17,9 @@ dem <- read.csv('https://raw.githubusercontent.com/dreth/UC3MDataTidyingAndRepor
 # numeric columns
 cols <- names(dem)[4:length(names(dem))-1]
 
+# trace errors
+options(shiny.trace=TRUE)
+
 shinyApp(
   # UI of the application
   ui = navbarPage(theme = shinytheme("slate"), "Country metrics",
@@ -209,7 +212,7 @@ shinyApp(
                   options = list(maxItems = length(cols))
                 ),
                 selectInput("selectIdentityTop",
-                  label = h4("Use country code or country for x-axis"),
+                  label = h4("Use country code or country name for x-axis"),
                   choices = c("country_name", "country_code"),
                   selected = "country_name"
                 ),
@@ -320,6 +323,32 @@ shinyApp(
       result
     }
 
+    # Function to plot barplots for the top N countries tab
+    topn_barplot <- function(dataset, identity, vars, orient, amount) {
+      if (length(vars) == 1) {
+        if (orient == "Top") {
+            demTopN <- dplyr::arrange_at(dem, vars[1], 'desc')[1:amount,]
+          } else {
+            demTopN <- dplyr::arrange_at(dem, vars[1])[1:amount,]
+          }
+        ggplot(demTopN, aes_string(x=identity, y=vars[1]))+
+          geom_bar(stat=vars[1])+
+          ggtitle(str_interp("${orient} ${amount}: ${vars[1]}"))
+      } else {
+        par(mfrow=c(length(vars),1))
+        for (i in 1:length(vars)) {
+          if (orient == "Top") {
+            demTopN <- dplyr::arrange_at(dem, vars[i], 'desc')[1:amount,]
+          } else {
+            demTopN <- dplyr::arrange_at(dem, vars[i])[1:amount,]
+          }
+          ggplot(demTopN, aes_string(x=identity, y=vars[i]))+
+            geom_bar(stat=vars[i])+
+            ggtitle(str_interp("${orient} ${amount}: ${vars[i]}"))
+        }
+      }
+      
+    }
 
     # Plot function call for histogram/boxplot section
     plotHistBox = function() {
@@ -334,28 +363,6 @@ shinyApp(
           fw=input$fwHB
         )
       )
-    }
-
-    # Function to plot barplots for the top N countries tab
-    topn_barplot <- function(dataset, identity, vars, orient, amount) {
-      if (length(vars) == 1) {
-        demTopN <- dem[1:amount,vars[1]]
-        ggplot(demTopN, aes_string(x=identity, y=vars[1]))+
-          geom_bar(stat="identity")
-      } else {
-        par(mfrow=c(length(vars),1))
-        for (i in 1:length(vars)) {
-          if (orient == "Top") {
-            demTopN <- dem %>% dplyr::arrange(vars[i], desc)
-          } else {
-            demTopN <- dem %>% dplyr::arrange(vars[i])
-          }
-          demTopN <- demTopN[1:amount,vars[i]]
-          ggplot(demTopN, aes_string(x=identity, y=vars[i]))+
-            geom_bar(stat="identity")
-        }
-      }
-      
     }
     
     # %% OUTPUTS %%
@@ -490,9 +497,17 @@ shinyApp(
              amount=input$selectTopN)
     },
       height = function () {
-        session$clientData$output_scatterPlotsCorrel_width * 1.5
+        if (length(reactive(input$selectVarsTop)) != 1) {
+          # session$clientData$output_topNPlot_width * 1.5
+          "auto"
+        } else {
+          "auto"
+        }
+        
       }
     )
   }
 )
+
+
 
