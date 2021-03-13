@@ -338,7 +338,8 @@ shinyApp(
           demTopN[,identity] <-  factor(demTopN[,identity], levels=demTopN[,identity])
         }
       plt <- ggplot(demTopN[1:amount,], aes_string(x=identity, y=vars[1]))+
-        ggtitle(str_interp("${orient} ${amount}: ${vars[1]}"))
+        ggtitle(str_interp("${orient} ${amount}: ${vars[1]}"))+
+        theme(axis.text.x = element_text(angle = 70))
       if (cat == 1) {
         plt + geom_bar(stat="identity", aes_string(fill="hdi_cat"))
       } else {
@@ -356,7 +357,8 @@ shinyApp(
           demTopN[,identity] <-  factor(demTopN[,identity], levels=demTopN[,identity])
         }
         plts[[i]] = ggplot(demTopN[1:amount,], aes_string(x=identity, y=vars[i]))+
-          ggtitle(str_interp("${orient} ${amount}: ${vars[i]}"))
+          ggtitle(str_interp("${orient} ${amount}: ${vars[i]}"))+
+          theme(axis.text.x = element_text(angle = 70))
         if (cat == 1) {
           plts[[i]] <- plts[[i]] + geom_bar(stat="identity", aes_string(fill="hdi_cat"))
         } else {
