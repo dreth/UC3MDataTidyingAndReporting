@@ -227,6 +227,10 @@ shinyApp(
                   label = h4("Plot top or bottom N countries"),
                   choices = c("Top","Bottom"),
                   selected = "Top"
+                ),
+                checkboxInput("markHDICategory",
+                  label = "Color by HDI",
+                  value = 0
                 )
               ),
 
@@ -324,31 +328,46 @@ shinyApp(
     }
 
     # Function to plot barplots for the top N countries tab
-    topn_barplot <- function(dataset, identity, vars, orient, amount) {
-      if (length(vars) == 1) {
-        if (orient == "Top") {
-            demTopN <- dplyr::arrange_at(dem, vars[1], 'desc')[1:amount,]
-          } else {
-            demTopN <- dplyr::arrange_at(dem, vars[1])[1:amount,]
-          }
-        ggplot(demTopN, aes_string(x=identity, y=vars[1]))+
-          geom_bar(stat=vars[1])+
-          ggtitle(str_interp("${orient} ${amount}: ${vars[1]}"))
-      } else {
-        par(mfrow=c(length(vars),1))
-        for (i in 1:length(vars)) {
-          if (orient == "Top") {
-            demTopN <- dplyr::arrange_at(dem, vars[i], 'desc')[1:amount,]
-          } else {
-            demTopN <- dplyr::arrange_at(dem, vars[i])[1:amount,]
-          }
-          ggplot(demTopN, aes_string(x=identity, y=vars[i]))+
-            geom_bar(stat=vars[i])+
-            ggtitle(str_interp("${orient} ${amount}: ${vars[i]}"))
+    topn_barplot <- function(dataset, identity, vars, orient, amount, cat) {
+    if (length(vars) == 1) {
+      if (orient == "Top") {
+          demTopN <- arrange_at(dem, vars[1], 'desc')
+          demTopN[,identity] <-  factor(demTopN[,identity], levels=demTopN[,identity])
+        } else {
+          demTopN <- arrange_at(dem, vars[1])
+          demTopN[,identity] <-  factor(demTopN[,identity], levels=demTopN[,identity])
         }
+      plt <- ggplot(demTopN[1:amount,], aes_string(x=identity, y=vars[1]))+
+        ggtitle(str_interp("${orient} ${amount}: ${vars[1]}"))
+      if (cat == 1) {
+        plt + geom_bar(stat="identity", aes_string(fill="hdi_cat"))
+      } else {
+        plt + geom_bar(stat="identity")
       }
       
+    } else {
+      plts <- list()
+      for (i in 1:length(vars)) {
+        if (orient == "Top") {
+          demTopN <- arrange_at(dem, vars[i], 'desc')
+          demTopN[,identity] <-  factor(demTopN[,identity], levels=demTopN[,identity])
+        } else {
+          demTopN <- arrange_at(dem, vars[i])
+          demTopN[,identity] <-  factor(demTopN[,identity], levels=demTopN[,identity])
+        }
+        plts[[i]] = ggplot(demTopN[1:amount,], aes_string(x=identity, y=vars[i]))+
+          ggtitle(str_interp("${orient} ${amount}: ${vars[i]}"))
+        if (cat == 1) {
+          plts[[i]] <- plts[[i]] + geom_bar(stat="identity", aes_string(fill="hdi_cat"))
+        } else {
+          plts[[i]] <- plts[[i]] + geom_bar(stat="identity")
+        }
+      }
+      grid.arrange(grobs=plts, nrow=length(vars))
     }
+  }
+
+
 
     # Plot function call for histogram/boxplot section
     plotHistBox = function() {
@@ -494,20 +513,16 @@ shinyApp(
              identity=input$selectIdentityTop,
              vars=input$selectVarsTop,
              orient=input$radioTopOrBottom,
-             amount=input$selectTopN)
+             amount=input$selectTopN,
+             cat=input$markHDICategory)
     },
       height = function () {
-        if (length(reactive(input$selectVarsTop)) != 1) {
-          # session$clientData$output_topNPlot_width * 1.5
-          "auto"
+        if (length(input$selectVarsTop) > 1) {
+          session$clientData$output_topNPlot_width * (1 + round((3/7)*log(length(input$selectVarsTop))))
         } else {
           "auto"
-        }
-        
+        } 
       }
     )
   }
 )
-
-
-
