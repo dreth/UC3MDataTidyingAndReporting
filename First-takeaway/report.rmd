@@ -9,6 +9,8 @@ params:
     amount: NA
     orient: NA
     cat: NA
+    plotHeight: NA
+    plotWidth: NA
 ---
 
 ```{r setup, include=FALSE}
@@ -23,6 +25,10 @@ knitr::opts_chunk$set(
 library(stringr)
 library(ggplot2)
 library(dplyr)
+
+#setup pixels -> inches
+plotWidthInches <- params$plotWidth * 0.0104166667
+plotHeightInches <- params$plotHeight * 0.0104166667
 ```
 
 # Top N report
@@ -99,7 +105,7 @@ knitr::kable(
 
 ## Top N for Variables selected
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=plotWidthInches, fig.height=plotHeightInches}
 topn_barplot(dataset=params$dataset,
              identity=params$identity,
              vars=params$variables,

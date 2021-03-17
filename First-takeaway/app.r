@@ -534,6 +534,8 @@ shinyApp(
         tempReport <- file.path(tempdir(), "report.rmd")
         file.copy("report.rmd", tempReport, overwrite=TRUE)
 
+        plotHeight = session$clientData$output_topNPlot_width * (1 + round((3/7)*log(length(input$selectVarsTop))))
+        plotWidth = session$clientData$output_topNPlot_width
         # parameters for the report
         params <- list(metric = isolate(input$checkReportParameters),
                        variables = isolate(input$selectVarsTop),
@@ -541,6 +543,8 @@ shinyApp(
                        amount = isolate(input$selectTopN),
                        orient = isolate(input$radioTopOrBottom),
                        cat = isolate(input$markHDICategory),
+                       plotWidth = isolate(plotWidth),
+                       plotHeight = isolate(plotHeight),
                        dataset = isolate(dem)
                       )
         # render report
