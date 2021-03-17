@@ -6,6 +6,7 @@ output: 'html_document'
 params: 
     metric: NA
     variables: NA
+    dataset: NA
 ---
 
 ```{r setup, include=FALSE}
@@ -16,14 +17,37 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE}
-topn_barplot(dataset=dem,
-             identity=input$selectIdentityTop,
-             vars=input$selectVarsTop,
-             orient=input$radioTopOrBottom,
-             amount=input$selectTopN,
-             cat=input$markHDICategory)
-
-print(params$metric)
-print(params$variables)
+```{r, echo=TRUE, warning=FALSE, message=FALSE}
+library(stringr)
 ```
+
+# Top N report
+
+## Basic metrics selected
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+metric <- data.frame(variables = params$variables)
+for (i in length(params$metric)) {
+    metric[,params$metric[i]] = rep(0, length(params$variables))
+    for (j in length(params$variables)) {
+        if (params$metric[i] == 'Mean') {
+            metric[j,params$metric[i]] = mean(dem[,params$variables[j]])
+        } else if (params$metric[i] == 'Median') {
+            metric[j,params$metric[i]] = median(dem[,params$variables[j]])
+        } else if (params$metric[i] == 'Max') {
+            metric[j,params$metric[i]] = max(dem[,params$variables[j]])
+        } else if (params$metric[i] == 'Min') {
+            metric[j,params$metric[i]] = min(dem[,params$variables[j]])
+        }
+    }
+}
+```
+
+## Variables selected
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+for (i in length(params$variables)) {
+    print(params$variables[i])
+}
+```
+

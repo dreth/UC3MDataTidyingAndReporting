@@ -536,12 +536,12 @@ shinyApp(
         if (input$matchTopNSelection == 1) {
           params <- list(metric = isolate(input$checkReportParameters),
                          variables = isolate(input$selectVarsTop),
-
+                         dataset = isolate(dem)
                         )
         } else {
           params <- list(metric = isolate(input$checkReportParameters),
                          variables = isolate(input$checkReportVariables),
-                         
+                          dataset = isolate(dem)
                         )
         }
         # render report
