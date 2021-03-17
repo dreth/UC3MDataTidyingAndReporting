@@ -10,9 +10,10 @@ require(PerformanceAnalytics)
 require(foreach)
 require(MASS)
 require(gridExtra)
+require(plotly)
 
 # importing data
-dem <- read.csv('https://raw.githubusercontent.com/dreth/UC3MDataTidyingAndReporting/main/First-takeaway/data/data.csv')
+dem <- read.csv('https://raw.githubusercontent.com/dreth/UC3MStatisticalLearning/main/data/without_tags/data.csv')
 
 # numeric columns
 cols <- names(dem)[4:length(names(dem))-1]
@@ -189,6 +190,28 @@ shinyApp(
           ),
         )
       ),
+
+      # Interactive plots (plotly)
+      tabPanel("Aggregates per HDI",
+        sidebarLayout(
+          sidebarPanel(
+            selectInput("plotlyVarSelect",
+              label = h4("Select variable to plot"),
+              choices = cols,
+              selected = sample(cols,1)
+            ),
+            selectInput("plotlyFUNSelect",
+              label = h4("Select function to aggregate"),
+              choices = c("mean","median","min","max"),
+              selected = sample(c("mean","median","min","max"),1)
+            )
+          ),
+          mainPanel(
+            plotOutput(outputId = "plotlyInteractivePlot")
+          ),
+        )
+      ),
+
 
       # Top N countries (selected by the user)
       # this section includes a report on these
@@ -533,7 +556,7 @@ shinyApp(
       content = function(file) {
         tempReport <- file.path(tempdir(), "report.rmd")
         file.copy("report.rmd", tempReport, overwrite=TRUE)
-
+        # measurements for plot
         plotHeight = session$clientData$output_topNPlot_width * (1 + round((3/7)*log(length(input$selectVarsTop))))
         plotWidth = session$clientData$output_topNPlot_width
         # parameters for the report
@@ -553,8 +576,19 @@ shinyApp(
                            output_file = file,
                            params = params,
                            envir = new.env(parent = globalenv())
-         )
+        )
       }
     )
+
+    # Interactive plot for aggregate per HDI
+    output$plotlyInteractivePlot <- renderPlot({
+      plotlyDataset <- aggregate(formula(str_interp("${input$plotlyVarSelect} ~ hdi_cat")), data=dem, FUN=switch(input$plotlyFUNSelect, mean=mean, median=median, min=min, max=max))
+      plot_ly(
+        x = plotlyDataset[,2],
+        y = plotlyDataset[,1],
+        title = str_interp("${input$plotlyVarSelect} by HDI"),
+        type = "bar"
+      )
+    })
   }
 )
