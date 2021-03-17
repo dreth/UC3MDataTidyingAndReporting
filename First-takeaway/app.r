@@ -18,9 +18,6 @@ dem <- read.csv('https://raw.githubusercontent.com/dreth/UC3MStatisticalLearning
 # numeric columns
 cols <- names(dem)[4:length(names(dem))-1]
 
-# trace errors
-options(shiny.trace=TRUE)
-
 shinyApp(
   # UI of the application
   ui = navbarPage(theme = shinytheme("slate"), "Country metrics",
@@ -207,7 +204,7 @@ shinyApp(
             )
           ),
           mainPanel(
-            plotOutput(outputId = "plotlyInteractivePlot")
+            plotly::plotlyOutput(outputId = "plotlyInteractivePlot")
           ),
         )
       ),
@@ -581,7 +578,7 @@ shinyApp(
     )
 
     # Interactive plot for aggregate per HDI
-    output$plotlyInteractivePlot <- renderPlot({
+    output$plotlyInteractivePlot <- plotly::renderPlotly({
       plotlyDataset <- aggregate(formula(str_interp("${input$plotlyVarSelect} ~ hdi_cat")), data=dem, FUN=switch(input$plotlyFUNSelect, mean=mean, median=median, min=min, max=max))
       plot_ly(
         x = plotlyDataset[,2],
