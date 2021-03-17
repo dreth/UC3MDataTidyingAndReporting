@@ -583,7 +583,6 @@ shinyApp(
       plot_ly(
         x = plotlyDataset[,2],
         y = plotlyDataset[,1],
-        title = str_interp("${input$plotlyVarSelect} by HDI"),
         type = "bar"
       )
     })
