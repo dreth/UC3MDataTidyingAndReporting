@@ -2,7 +2,10 @@
 title: 'Country Metrics Report'
 author: 'Daniel A.'
 date: "`r format(Sys.time(), '%Y, %B, %d, %H')`"
-output: 'pdf_document'
+output: 'html_document'
+params: 
+    metric: NA
+    variables: NA
 ---
 
 ```{r setup, include=FALSE}
@@ -13,3 +16,14 @@ knitr::opts_chunk$set(
 )
 ```
 
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+topn_barplot(dataset=dem,
+             identity=input$selectIdentityTop,
+             vars=input$selectVarsTop,
+             orient=input$radioTopOrBottom,
+             amount=input$selectTopN,
+             cat=input$markHDICategory)
+
+print(params$metric)
+print(params$variables)
+```

@@ -68,7 +68,6 @@ shinyApp(
           br(),
           img(src="https://raw.githubusercontent.com/dreth/UC3MDataTidyingAndReporting/main/First-takeaway/www/worldbanklogo.png", width=462.222, height=260)
         ),
-        
       ),
 
       # Panel for histograms/boxplots
@@ -146,7 +145,6 @@ shinyApp(
                 ),
               )
             ),
-            
           ),
           mainPanel(
             plotOutput(outputId = "multiPlotsBasic")
@@ -329,45 +327,44 @@ shinyApp(
 
     # Function to plot barplots for the top N countries tab
     topn_barplot <- function(dataset, identity, vars, orient, amount, cat) {
-    if (length(vars) == 1) {
-      if (orient == "Top") {
-          demTopN <- arrange_at(dem, vars[1], 'desc')
-          demTopN[,identity] <-  factor(demTopN[,identity], levels=demTopN[,identity])
-        } else {
-          demTopN <- arrange_at(dem, vars[1])
-          demTopN[,identity] <-  factor(demTopN[,identity], levels=demTopN[,identity])
-        }
-      plt <- ggplot(demTopN[1:amount,], aes_string(x=identity, y=vars[1]))+
-        ggtitle(str_interp("${orient} ${amount}: ${vars[1]}"))+
-        theme(axis.text.x = element_text(angle = 70))
-      if (cat == 1) {
-        plt + geom_bar(stat="identity", aes_string(fill="hdi_cat"))
-      } else {
-        plt + geom_bar(stat="identity")
-      }
-      
-    } else {
-      plts <- list()
-      for (i in 1:length(vars)) {
+      if (length(vars) == 1) {
         if (orient == "Top") {
-          demTopN <- arrange_at(dem, vars[i], 'desc')
-          demTopN[,identity] <-  factor(demTopN[,identity], levels=demTopN[,identity])
-        } else {
-          demTopN <- arrange_at(dem, vars[i])
-          demTopN[,identity] <-  factor(demTopN[,identity], levels=demTopN[,identity])
-        }
-        plts[[i]] = ggplot(demTopN[1:amount,], aes_string(x=identity, y=vars[i]))+
-          ggtitle(str_interp("${orient} ${amount}: ${vars[i]}"))+
-          theme(axis.text.x = element_text(angle = 70))
+            demTopN <- arrange_at(dem, vars[1], 'desc')
+            demTopN[,identity] <-  factor(demTopN[,identity], levels=demTopN[,identity])
+          } else {
+            demTopN <- arrange_at(dem, vars[1])
+            demTopN[,identity] <-  factor(demTopN[,identity], levels=demTopN[,identity])
+          }
+        plt <- ggplot(demTopN[1:amount,], aes_string(x=identity, y=vars[1]))+
+          ggtitle(str_interp("${orient} ${amount}: ${vars[1]}"))+
+          theme(axis.text.x = element_text(angle = 45))
         if (cat == 1) {
-          plts[[i]] <- plts[[i]] + geom_bar(stat="identity", aes_string(fill="hdi_cat"))
+          plt + geom_bar(stat="identity", aes_string(fill="hdi_cat"))
         } else {
-          plts[[i]] <- plts[[i]] + geom_bar(stat="identity")
+          plt + geom_bar(stat="identity")
         }
+      } else {
+        plts <- list()
+        for (i in 1:length(vars)) {
+          if (orient == "Top") {
+            demTopN <- arrange_at(dem, vars[i], 'desc')
+            demTopN[,identity] <-  factor(demTopN[,identity], levels=demTopN[,identity])
+          } else {
+            demTopN <- arrange_at(dem, vars[i])
+            demTopN[,identity] <-  factor(demTopN[,identity], levels=demTopN[,identity])
+          }
+          plts[[i]] = ggplot(demTopN[1:amount,], aes_string(x=identity, y=vars[i]))+
+            ggtitle(str_interp("${orient} ${amount}: ${vars[i]}"))+
+            theme(axis.text.x = element_text(angle = 45))
+          if (cat == 1) {
+            plts[[i]] <- plts[[i]] + geom_bar(stat="identity", aes_string(fill="hdi_cat"))
+          } else {
+            plts[[i]] <- plts[[i]] + geom_bar(stat="identity")
+          }
+        }
+        grid.arrange(grobs=plts, nrow=length(vars))
       }
-      grid.arrange(grobs=plts, nrow=length(vars))
     }
-  }
 
 
 
@@ -476,12 +473,12 @@ shinyApp(
          geom_tile() +
          scale_fill_gradient(low="red", high="blue", limits=c(-1,1))+
          theme(axis.text.x = element_text(angle = 70, vjust = 1, size = 9, hjust = 1),
-             axis.title.x = element_blank(),
-             axis.title.y = element_blank(),
-             panel.grid.major = element_blank(),
-             panel.border = element_blank(),
-             panel.background = element_blank(),
-             axis.ticks = element_blank())
+               axis.title.x = element_blank(),
+               axis.title.y = element_blank(),
+               panel.grid.major = element_blank(),
+               panel.border = element_blank(),
+               panel.background = element_blank(),
+               axis.ticks = element_blank())
       } else if (input$radioCorrel == "Performance analytics") {
         # selecting numeric cols
         df <- dem[4:length(names(dem))-1]
@@ -524,6 +521,35 @@ shinyApp(
         } else {
           "auto"
         } 
+      }
+    )
+
+    # Generate report for top N countries
+    output$downloadReport <- downloadHandler(
+      filename <- "report.html",
+      # content of the report
+      content = function(file) {
+        tempReport <- file.path(tempdir(), "report.rmd")
+        file.copy("report.rmd", tempReport, overwrite=TRUE)
+
+        # parameters for the report
+        if (input$matchTopNSelection == 1) {
+          params <- list(metric = isolate(input$checkReportParameters),
+                         variables = isolate(input$selectVarsTop),
+
+                        )
+        } else {
+          params <- list(metric = isolate(input$checkReportParameters),
+                         variables = isolate(input$checkReportVariables),
+                         
+                        )
+        }
+        # render report
+         rmarkdown::render(tempReport, 
+                           output_file = file,
+                           params = params,
+                           envir = new.env(parent = globalenv())
+         )
       }
     )
   }
