@@ -1,6 +1,5 @@
 ---
 title: 'Country Metrics Report'
-author: 'Daniel A.'
 date: "`r format(Sys.time(), '%Y, %B, %d, %H')`"
 output: 'html_document'
 params: 
@@ -17,7 +16,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r, echo=TRUE, warning=FALSE, message=FALSE}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 library(stringr)
 ```
 
@@ -27,27 +26,32 @@ library(stringr)
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 metric <- data.frame(variables = params$variables)
-for (i in length(params$metric)) {
+for (i in 1:length(params$metric)) {
     metric[,params$metric[i]] = rep(0, length(params$variables))
-    for (j in length(params$variables)) {
+    for (j in 1:length(params$variables)) {
         if (params$metric[i] == 'Mean') {
-            metric[j,params$metric[i]] = mean(dem[,params$variables[j]])
+            metric[j,params$metric[i]] = mean(params$dataset[,params$variables[j]])
         } else if (params$metric[i] == 'Median') {
-            metric[j,params$metric[i]] = median(dem[,params$variables[j]])
+            metric[j,params$metric[i]] = median(params$dataset[,params$variables[j]])
         } else if (params$metric[i] == 'Max') {
-            metric[j,params$metric[i]] = max(dem[,params$variables[j]])
+            metric[j,params$metric[i]] = max(params$dataset[,params$variables[j]])
         } else if (params$metric[i] == 'Min') {
-            metric[j,params$metric[i]] = min(dem[,params$variables[j]])
+            metric[j,params$metric[i]] = min(params$dataset[,params$variables[j]])
         }
     }
 }
+knitr::kable(
+    metric,
+    booktabs=TRUE,
+    longtable=TRUE,
+    caption="Basic metrics"
+)
 ```
 
 ## Variables selected
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 for (i in length(params$variables)) {
-    print(params$variables[i])
+    
 }
 ```
-

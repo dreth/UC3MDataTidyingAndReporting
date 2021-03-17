@@ -238,7 +238,8 @@ shinyApp(
                 p("Select what metrics and variables to include in the top N report"),
                 checkboxGroupInput("checkReportParameters",
                   label = h4("Metric selection"),
-                  choices = c("Mean", "Median", "Max", "Min")
+                  choices = c("Mean", "Median", "Max", "Min"),
+                  selected = c("Mean", "Median", "Max", "Min")
                 ),
                 selectizeInput("checkReportVariables",
                   label = h4("Variable selection"),
