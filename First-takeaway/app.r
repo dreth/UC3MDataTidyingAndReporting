@@ -241,14 +241,11 @@ shinyApp(
                   choices = c("Mean", "Median", "Max", "Min"),
                   selected = c("Mean", "Median", "Max", "Min")
                 ),
-                selectizeInput("checkReportVariables",
-                  label = h4("Variable selection"),
-                  choices = cols,
-                  options = list(maxItems = length(cols))
-                ),
-                checkboxInput("matchTopNSelection",
-                  label = "Match variable selection of plot params",
-                  value = 1
+                radioButtons("outputFileFormat",
+                  label = h4("Select output file format"),
+                  choices = c("PDF", "HTML", "Word"),
+                  selected = "HTML",
+                  inline = TRUE
                 ),
                 downloadButton("downloadReport",
                   label="Generate report"
@@ -527,26 +524,28 @@ shinyApp(
 
     # Generate report for top N countries
     output$downloadReport <- downloadHandler(
-      filename <- "report.html",
+      # Extension selector
+      filename = function() {
+        ext <- switch(input$outputFileFormat, PDF = 'pdf', HTML = 'html', Word = 'docx')
+        str_interp('topNreport.${ext}')
+      },
       # content of the report
       content = function(file) {
         tempReport <- file.path(tempdir(), "report.rmd")
         file.copy("report.rmd", tempReport, overwrite=TRUE)
 
         # parameters for the report
-        if (input$matchTopNSelection == 1) {
-          params <- list(metric = isolate(input$checkReportParameters),
-                         variables = isolate(input$selectVarsTop),
-                         dataset = isolate(dem)
-                        )
-        } else {
-          params <- list(metric = isolate(input$checkReportParameters),
-                         variables = isolate(input$checkReportVariables),
-                          dataset = isolate(dem)
-                        )
-        }
+        params <- list(metric = isolate(input$checkReportParameters),
+                       variables = isolate(input$selectVarsTop),
+                       identity = isolate(input$selectIdentityTop),
+                       amount = isolate(input$selectTopN),
+                       orient = isolate(input$radioTopOrBottom),
+                       cat = isolate(input$markHDICategory),
+                       dataset = isolate(dem)
+                      )
         # render report
          rmarkdown::render(tempReport, 
+                           output_format = switch(input$outputFileFormat,PDF = 'pdf_document', HTML = 'html_document', Word = 'word_document'),
                            output_file = file,
                            params = params,
                            envir = new.env(parent = globalenv())
