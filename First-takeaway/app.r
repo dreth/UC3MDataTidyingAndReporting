@@ -255,7 +255,7 @@ shinyApp(
               # Report parameters
               tabPanel("Report parameters",
                 h4("Report parameter selection"),
-                p("Select what metrics and variables to include in the top N report"),
+                p("Select what metrics to include in the top N report"),
                 checkboxGroupInput("checkReportParameters",
                   label = h4("Metric selection"),
                   choices = c("Mean", "Median", "Max", "Min"),
@@ -345,6 +345,7 @@ shinyApp(
 
     # Function to plot barplots for the top N countries tab
     topn_barplot <- function(dataset, identity, vars, orient, amount, cat) {
+      amount <- ifelse(amount > length(dataset$country_name), length(dataset$country_name), amount)
       if (length(vars) == 1) {
         if (orient == "Top") {
             demTopN <- arrange_at(dem, vars[1], 'desc')

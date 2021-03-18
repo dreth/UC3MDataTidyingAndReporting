@@ -53,21 +53,62 @@ Save plot tab:
 
 ### Correlation plots
 
-In this section scatter plots can be created between 2 variables in the dataset (randomized upon entry), colour those by HDI category, switch the variables' axis.
-
 #### Core functionality
 
+In this section we have the following functionality:
+
+- Scatter plots can be created between 2 variables in the dataset (randomized upon entry), we can colour those by HDI category and switch the variables' axis
+- Generate a *PerformanceAnalytics* correlation chart
+- Generate a correlation matrix heatmap (only utilizes the maximum correlation coefficient of the 3 available in **cor**: *kendall*, *spearman* and *pearson*) 
+- Shows a correlation table with the previously mentioned 3 correlation coefficients computed for the 2 variables selected.
+
 #### Options
+
+- Select plot type (selects between scatter plot, correlation matrix heatmap and *PerformanceAnalytics* correlation chart)
+- Select variable 1 and 2 (for scatter plot and correlation table)
+- Switch variables (to switch between variable 1 and 2's axes in the plot)
+- Color by HDI (allows colouring the points in the plot by HDI category)
 
 ### Aggregates per HDI
 
-#### Core functionality
-
-#### Options
-
-### Top n countries
+In this section a Plotly plot is generated of a simple bar plot.
 
 #### Core functionality
 
+- Generate barplot of aggregate values for the specified variable 
+- Select and determine which aggregation function is used for the variable sleected
+
 #### Options
 
+- Select variable to perform the aggregation and generate the barplot
+- Select aggregation function to employ
+
+### Top n countries 
+
+This tab plots or generates a report of top/bottom N countries for the variable(s) selected.
+
+#### Core functionality
+
+- Generate a plot or multiple plot grid of top/bottom N countries for the specified variable
+- Plots can be generated with either country names or ISO-3166 alpha-3 country codes
+- Plots can be coloured by their respective HDI category
+- Generate a report with simple statistics generated per variable selected. This report can be generated in either PDF, HTML or Word format
+
+#### Options
+
+Information tab:
+
+Basic information on the section's functionality.
+
+Plot parameters:
+
+- Select variable(s) to plot top/bottom N countries (respective to that variable) in the figure
+- Select ISO-3166 alpha-3 country code or country name to assign to the x-axis of the barplot
+- Select how many countries to consider (default is 10, which in turn means 10 countries will appear in the plot, this can be modified up to the total amount of countries)
+- Select to plot top or bottom N countries
+- Select whether to colour the bars by HDI category or not
+
+Report parameters:
+
+- Selection of metrics for the statistical summary table (generates a table for all variable selected for the plots and the metrics selected in this checkbox field)
+- Selection of file format to generate the report as
