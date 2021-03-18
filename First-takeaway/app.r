@@ -348,10 +348,10 @@ shinyApp(
       amount <- ifelse(amount > length(dataset$country_name), length(dataset$country_name), amount)
       if (length(vars) == 1) {
         if (orient == "Top") {
-            demTopN <- arrange_at(dem, vars[1], 'desc')
+            demTopN <- arrange_at(dataset, vars[1], 'desc')
             demTopN[,identity] <-  factor(demTopN[,identity], levels=demTopN[,identity])
           } else {
-            demTopN <- arrange_at(dem, vars[1])
+            demTopN <- arrange_at(dataset, vars[1])
             demTopN[,identity] <-  factor(demTopN[,identity], levels=demTopN[,identity])
           }
         plt <- ggplot(demTopN[1:amount,], aes_string(x=identity, y=vars[1]))+
@@ -366,10 +366,10 @@ shinyApp(
         plts <- list()
         for (i in 1:length(vars)) {
           if (orient == "Top") {
-            demTopN <- arrange_at(dem, vars[i], 'desc')
+            demTopN <- arrange_at(dataset, vars[i], 'desc')
             demTopN[,identity] <-  factor(demTopN[,identity], levels=demTopN[,identity])
           } else {
-            demTopN <- arrange_at(dem, vars[i])
+            demTopN <- arrange_at(dataset, vars[i])
             demTopN[,identity] <-  factor(demTopN[,identity], levels=demTopN[,identity])
           }
           plts[[i]] = ggplot(demTopN[1:amount,], aes_string(x=identity, y=vars[i]))+
